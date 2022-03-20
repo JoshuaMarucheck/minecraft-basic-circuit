@@ -1,0 +1,40 @@
+The language has two things: bit collections and circuits.
+
+A bit collection can have its bit length specified by prefixing it with "int:", where int is the numeral for the bit count.
+
+A circuit takes a specific number of inputs and gives a specific number of outputs.
+When a circuit is given a bit collection as input, it uses as many bits as it can from that collection.
+When a circuit is given multiple bit collections as input, it will use their bits in order.
+
+
+Constants can be specified in hexadecimal in little endian format.
+These are essentially bit collections that cannot be read.
+
+the first line specifies inputs. Strings represent named bit collections that are set to the value of inputs.
+the last line specifies outputs. Same as above.
+
+
+A single line has the format:
+a = expr
+where "a" is some identifier for string bits. It shadows old definitions for the same identifier.
+where "expr" is some expression
+
+
+=== Expressions ===
+
+Expressions are written with circuit names, bit collections, and parentheses.
+Inside any given scope (inside a new set of parentheses, after =, etc.),
+the first item is assumed to be a circuit name, and the rest are
+assumed to be bit collections which that circuit takes as input.
+
+
+
+
+
+1 -> 2 means add an edge from 1 to 2
+1 = ... means to set to node 1 the output of whatever circuit is specified on the right
+abc = ... is similar, setting a set of bits (collectively referred to as abc) to the set of outputs
+
+
+
+functions are curried
