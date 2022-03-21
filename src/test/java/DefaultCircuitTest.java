@@ -1,5 +1,6 @@
 import circuit.Circuit;
 import circuit.preconstructed.CircuitCollection;
+import circuit.preconstructed.GateFileParser;
 import circuit.preconstructed.LowLevelCircuitGenerator;
 
 import java.io.File;
@@ -17,10 +18,14 @@ public class DefaultCircuitTest {
     cc.registerCircuit("any4", LowLevelCircuitGenerator.any(4));
     cc.registerCircuit("all4", LowLevelCircuitGenerator.all(4));
 
+    cc.getOrLoad(new File(root + "specialized/constant5.txt"));
+
     cc.getOrLoad(new File(root + "specialized/xor3.txt"));
     cc.getOrLoad(new File(root + "specialized/atLeast2.txt"));
 
     CircuitTest[] tests = new CircuitTest[]{
+        new CircuitTest("constant5", "", "101000"),
+
         new CircuitTest("atLeast2", "000", "0"),
         new CircuitTest("atLeast2", "100", "0"),
         new CircuitTest("atLeast2", "010", "0"),

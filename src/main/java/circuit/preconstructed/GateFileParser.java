@@ -4,10 +4,12 @@ import circuit.AnnotatedCircuit;
 import circuit.AnnotationCircuitBuilder;
 import circuit.Pair;
 import circuit.iterators.FilterIterator;
+import circuit.preconstructed.exceptions.ConstantValueException;
 import circuit.preconstructed.exceptions.MissingCircuitDependencyException;
 import circuit.preconstructed.exceptions.StrictCheckException;
 import tokens.Tokenizer;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -41,8 +43,6 @@ public class GateFileParser {
   }
 
   private Map<String, AnnotatedCircuit> namedCircuits;
-  private String[] inputNames;
-  private String[] outputNames;
   private HashMap<String, String> nameMapping;
   private HashMap<String, BitCollection> bitCollections;
   private Iterator<String> lines;
@@ -52,13 +52,122 @@ public class GateFileParser {
 
   private GateFileParser(Map<String, AnnotatedCircuit> namedCircuits, Iterator<String> lines, boolean strict) {
     this.namedCircuits = namedCircuits;
-    this.inputNames = null;
-    this.outputNames = null;
     this.nameMapping = new HashMap<String, String>();
     this.bitCollections = new HashMap<String, BitCollection>();
     this.lines = new LineFilterIterator(lines);
     this.circuitBuilder = new AnnotationCircuitBuilder();
     this.strict = strict;
+  }
+
+  boolean[] toBoolArr(long constant, int bitLength) throws ConstantValueException {
+    boolean[] arr = new boolean[bitLength];
+    Arrays.fill(arr, false);
+
+    long val = constant;
+    for (int i = 0; i < bitLength && val != 0; i++) {
+      arr[i] = val % 2 == 1;
+      val /= 2;
+    }
+    if (val != 0) {
+      throw new ConstantValueException(constant, bitLength);
+    }
+    return arr;
+  }
+
+  private Pair<String, Integer> splitToken(String token) {
+    int colon = token.indexOf(':');
+
+    int length;
+    String varName;
+
+    try {
+      varName = token.substring(0, colon);
+      length = Integer.parseInt(token.substring(colon + 1));
+    } catch (IndexOutOfBoundsException e) {
+      varName = token;
+      length = -1;
+    } catch (NumberFormatException e) {
+      varName = token;
+      length = -1;
+    }
+
+    return new Pair<String, Integer>(varName, length);
+  }
+
+  /**
+   * Parses a token that is not a function.
+   * <p>
+   * If {@code isDeclaration} is {@code true}, then it checks that it is not a constant value,
+   * and it shadows any old declaration. If {@code false}, it makes sure that it exists as a variable or is a constant.
+   * <p>
+   * Parses a token that is either the output of another circuit (a variable name) or a constant.
+   * If it is a constant, adds a circuit outputting it to the builder, and returns the {@code BitCollection}.
+   *
+   * @param isDeclaration Whether or not {@code token} is the first in its line (or is an input to the circuit)
+   * @param token         The constant string to parse
+   * @return The BitCollection of the circuit that outputs this value.
+   */
+  private BitCollection parseToken(String token, boolean isDeclaration) {
+    Pair<String, Integer> spl = splitToken(token);
+
+    String varName = spl.getFirst();
+    int length = spl.getSecond();
+
+    long varVal;
+    try {
+      // varName is maybe a constant?
+      int radix = -1;
+      if (varName.length() >= 3 && varName.charAt(0) == '0') {
+        switch (varName.charAt(1)) {
+          case 'x':
+            radix = 16;
+            break;
+          case 'b':
+            radix = 2;
+            break;
+        }
+      }
+      if (radix != -1) {
+        varVal = Integer.parseInt(varName.substring(2), radix);
+      } else {
+        varVal = Integer.parseInt(varName);
+      }
+    } catch (NumberFormatException e) {
+      // varName is not a constant
+      if (isDeclaration) {
+        AnnotatedCircuit ac = LowLevelCircuitGenerator.identity(length);
+        int circuitId = circuitBuilder.addCircuit(ac);
+        circuitBuilder.registerAsInput(circuitId);
+
+        BitCollection bc = new BitCollection(circuitId, length);
+        makeAlias(varName, bc);
+        return getLocal(varName);
+      } else {
+        BitCollection bc = getLocal(varName);
+        if (length != -1 && length != bc.length) {
+          throw new IllegalArgumentException("For token " + token + ": bit length is different from before!");
+        }
+        return bc;
+      }
+    }
+
+    // varName is a constant, with value varVal
+    if (isDeclaration) {
+      throw new IllegalArgumentException("For token " + token + ": you cannot set a constant to another value!");
+    } else {
+      try {
+        boolean[] varBoolValue = toBoolArr(varVal, length);
+
+        AnnotatedCircuit ac = LowLevelCircuitGenerator.constant(varBoolValue);
+        int circuitId = circuitBuilder.addCircuit(ac);
+
+        BitCollection bc = new BitCollection(circuitId, length);
+        makeAlias(varName, bc);
+        return bc;
+      } catch (ConstantValueException e) {
+        throw new RuntimeException("For constant " + token, e);
+      }
+    }
   }
 
   /**
@@ -68,67 +177,37 @@ public class GateFileParser {
    */
   private void parseInitialBoundaryLine(String line, boolean createIdentityCircuits) {
     String[] arr = line.split("\\s+");
-    this.inputNames = arr;
 
     if (createIdentityCircuits) {
       for (String input : arr) {
-        int colon = input.indexOf(':');
-//      int offset = -1;
-        int circuitId;
-        int length;
-        String varName;
-
-        try {
-          varName = input.substring(0, colon);
-          length = Integer.parseInt(input.substring(colon + 1));
-        } catch (IndexOutOfBoundsException e) {
-          varName = input;
-          length = -1;
-        } catch (NumberFormatException e) {
-          varName = input;
-          length = -1;
-        }
-
-        AnnotatedCircuit ac = LowLevelCircuitGenerator.identity(length);
-        circuitId = circuitBuilder.addCircuit(ac);
-        circuitBuilder.registerAsInput(circuitId);
-
-        BitCollection bc = new BitCollection(circuitId, length);
-        makeAlias(varName, bc);
+        parseToken(input, true);
       }
     }
   }
 
+  private void parseFinalBoundaryLine(String line) {
+    String[] outputNames = line.split("\\s+");
 
-  private Pair<String[], HashMap<String, BitCollection>> parseFinalBoundaryLine(String line) {
-    HashMap<String, BitCollection> r = new HashMap<String, BitCollection>();
-    String[] arr = line.split("\\s+");
-
-    for (String input : arr) {
-      int colon = input.indexOf(':');
-//      int offset = -1;
-      int length;
-      String varName;
-
-      try {
-        varName = input.substring(colon + 1);
-        length = Integer.parseInt(input.substring(0, colon));
-      } catch (IndexOutOfBoundsException e) {
-        varName = input;
-        length = -1;
-      } catch (NumberFormatException e) {
-        varName = input;
-        length = -1;
-      }
-
-      BitCollection bc = getLocal(varName);
-      r.put(varName, bc);
-      if (length != -1 && bc.length != length) {
-        throw new StrictCheckException("Length of output doesn't match prediction");
+    if (outputNames.length != 1) {
+      if (outputNames.length >= 2 && outputNames[1].equals("=")) {
+        throw new IllegalArgumentException("File ended with an assignment instead of a return value");
+      } else if (outputNames.length == 0) {
+        throw new IllegalStateException("It shouldn't be possible for an empty line to reach this point...");
+      } else {
+        throw new UnsupportedOperationException("All files must have exactly one output for now");
       }
     }
 
-    return new Pair<String[], HashMap<String, BitCollection>>(arr, r);
+    for (String output : outputNames) {
+      String trueOutput = splitToken(output).getFirst();
+
+      // parseToken does a length check for us (declared length against previously calculated length)
+      BitCollection bc1 = parseToken(output, false);
+      circuitBuilder.registerAsOutput(bc1.circuitId);
+
+      BitCollection bc2 = getLocal(trueOutput);
+      assert !strict || bc1.length == bc2.length;
+    }
   }
 
   /**
@@ -185,7 +264,20 @@ public class GateFileParser {
     String mainCircuitName = tokenIter.next();
     AnnotatedCircuit mainCircuit = namedCircuits.get(mainCircuitName);
     if (mainCircuit == null) {
-      throw new MissingCircuitDependencyException(mainCircuitName);
+      // Oops, we can't find that circuit name
+      if (mainCircuitName.equals("(")) {
+        StringBuilder sb = new StringBuilder("(");
+        if (tokenIter.hasNext()) {
+          String token;
+          do {
+            token = tokenIter.next();
+            sb.append(" ").append(token);
+          } while (tokenIter.hasNext() && !token.equals(")"));
+        }
+        throw new IllegalArgumentException("An expression started with a '(' character. (All expressions must start with a function name.)\nFor expression \"" + sb.toString() + "\"");
+      } else {
+        throw new MissingCircuitDependencyException(mainCircuitName);
+      }
     }
 
     int mainCircuitId = circuitBuilder.addCircuit(mainCircuit);
@@ -203,7 +295,7 @@ public class GateFileParser {
       if (token.equals("(")) {
         subCircuitId = this.parseExpression(tokenIter);
       } else {
-        BitCollection bc = getLocal(token);
+        BitCollection bc = parseToken(token, false);
         if (bc == null) {
           throw new RuntimeException('"' + token + "\" was never assigned a value in bitCollections");
         }
@@ -262,23 +354,7 @@ public class GateFileParser {
       line = lines.next();
     }
 
-    Pair<String[], HashMap<String, BitCollection>> finish = parseFinalBoundaryLine(line);
-    this.outputNames = finish.getFirst();
-    HashMap<String, BitCollection> outputBitCollections = finish.getSecond();
-    if (this.outputNames.length != 1) {
-      if (this.outputNames.length >= 2 && this.outputNames[1].equals("=")) {
-        throw new IllegalArgumentException("File ended with an assignment instead of a return value");
-      } else if (this.outputNames.length == 0) {
-        throw new IllegalStateException("It shouldn't be possible for an empty line to reach this point...");
-      } else {
-        throw new UnsupportedOperationException("All files must have exactly one output for now");
-      }
-    }
-    for (String output : this.outputNames) {
-      BitCollection bc = getLocal(output);
-      assert !strict || bc.length == outputBitCollections.get(output).length;
-      circuitBuilder.registerAsOutput(bc.circuitId);
-    }
+    this.parseFinalBoundaryLine(line);
 
     return circuitBuilder.toCircuit();
   }
