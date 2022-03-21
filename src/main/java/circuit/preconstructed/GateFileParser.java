@@ -144,7 +144,7 @@ public class GateFileParser {
         return getLocal(varName);
       } else {
         BitCollection bc = getLocal(varName);
-        if (length != -1 && length != bc.length) {
+        if (bc != null && length != -1 && length != bc.length) {
           throw new IllegalArgumentException("For token " + token + ": bit length is different from before!");
         }
         return bc;
@@ -203,6 +203,9 @@ public class GateFileParser {
 
       // parseToken does a length check for us (declared length against previously calculated length)
       BitCollection bc1 = parseToken(output, false);
+      if (bc1 == null) {
+        throw new IllegalArgumentException("Unrecognised return value: \"" + output + "\"");
+      }
       circuitBuilder.registerAsOutput(bc1.circuitId);
 
       BitCollection bc2 = getLocal(trueOutput);
@@ -248,6 +251,8 @@ public class GateFileParser {
   /**
    * Queries for the global variable associated with the alias of {@code localName} (if there is one).
    * For setting the values, use {@code makeAlias}
+   *
+   * @return The BitCollection currently associated with this variable name, or {@code null} if none exists
    */
   private BitCollection getLocal(String localName) {
     return bitCollections.get(this.getAlias(localName));
@@ -264,19 +269,27 @@ public class GateFileParser {
     String mainCircuitName = tokenIter.next();
     AnnotatedCircuit mainCircuit = namedCircuits.get(mainCircuitName);
     if (mainCircuit == null) {
-      // Oops, we can't find that circuit name
-      if (mainCircuitName.equals("(")) {
-        StringBuilder sb = new StringBuilder("(");
-        if (tokenIter.hasNext()) {
+      if (tokenIter.hasNext()) {
+        // Oops, we can't find that circuit name
+        if (mainCircuitName.equals("(")) {
+          StringBuilder sb = new StringBuilder("(");
           String token;
           do {
             token = tokenIter.next();
             sb.append(" ").append(token);
           } while (tokenIter.hasNext() && !token.equals(")"));
+          throw new IllegalArgumentException("An expression started with a '(' character. (All expressions must start with a function name.)\nFor expression \"" + sb.toString() + "\"");
+        } else {
+          throw new MissingCircuitDependencyException(mainCircuitName);
         }
-        throw new IllegalArgumentException("An expression started with a '(' character. (All expressions must start with a function name.)\nFor expression \"" + sb.toString() + "\"");
       } else {
-        throw new MissingCircuitDependencyException(mainCircuitName);
+        // Maybe it's a constant?
+        String token = mainCircuitName;
+        BitCollection bc = parseToken(token, false);
+        if (bc == null) {
+          throw new IllegalArgumentException("Constant/variable not recognised: \"" + token + "\"");
+        }
+        return bc.circuitId;
       }
     }
 
