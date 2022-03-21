@@ -13,7 +13,7 @@ public class DefaultCircuitTest {
 
     LowLevelCircuitGenerator gen = LowLevelCircuitGenerator.canonicalGenerator;
 
-    cc.addAll(gen.operators(8));
+    cc.addAll(gen.operators(64));
 
     cc.registerCircuit("add1", gen.addition(1));
     cc.registerCircuit("add2", gen.addition(2));
@@ -22,6 +22,7 @@ public class DefaultCircuitTest {
     cc.registerCircuit("all4", LowLevelCircuitGenerator.all(4));
 
     cc.getOrLoad(new File(root + "specialized/constant5.txt"));
+    cc.getOrLoad(new File(root + "final/is_palindrome.txt"));
 
     cc.getOrLoad(new File(root + "specialized/xor3.txt"));
     cc.getOrLoad(new File(root + "specialized/atLeast2.txt"));
@@ -100,15 +101,18 @@ public class DefaultCircuitTest {
         new CircuitTest("add2", "1011", "00"), // overflow works
         new CircuitTest("add2", "0101", "00"),
         new CircuitTest("add2", "1111", "01"),
+        
+//        // our numbers are little-endian, but shifting is bit-endian
+//        new CircuitTest("<<2", "00101100", "00001011"),
+//        new CircuitTest("<<4", "00101100", "00000010"),
+//
+//        new CircuitTest(">>2", "00101100", "10110000"),
+//        new CircuitTest(">>4", "00101100", "11000000"),
+//
+//        new CircuitTest("+", "00101100 01000101", "01101011"),
 
-        // our numbers are little-endian, but shifting is bit-endian
-        new CircuitTest("<<2", "00101100", "00001011"),
-        new CircuitTest("<<4", "00101100", "00000010"),
-
-        new CircuitTest(">>2", "00101100", "10110000"),
-        new CircuitTest(">>4", "00101100", "11000000"),
-
-        new CircuitTest("+", "00101100 01000101", "01101011"),
+        new CircuitTest("is_palindrome", "00001111 01010011 10101100 00000000 00000000 00110101 11001010 11110000", "1"),
+        new CircuitTest("is_palindrome", "00001111 01010011 11001010 11110000 00000000 00000000 00000000 00000000", "0"),
     };
 
     for (CircuitTest test : tests) {
