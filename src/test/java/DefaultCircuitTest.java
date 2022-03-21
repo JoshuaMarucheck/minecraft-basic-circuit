@@ -14,6 +14,9 @@ public class DefaultCircuitTest {
     cc.registerCircuit("add1", gen.addition(1));
     cc.registerCircuit("add2", gen.addition(2));
 
+    cc.registerCircuit("any4", LowLevelCircuitGenerator.any(4));
+    cc.registerCircuit("all4", LowLevelCircuitGenerator.all(4));
+
     cc.getOrLoad(new File(root + "specialized/xor3.txt"));
     cc.getOrLoad(new File(root + "specialized/atLeast2.txt"));
 
@@ -54,6 +57,30 @@ public class DefaultCircuitTest {
         new CircuitTest("not", "0", "1"),
         new CircuitTest("not", "1", "0"),
 
+        new CircuitTest("any4", "0000", "0"),
+        new CircuitTest("any4", "1000", "1"),
+        new CircuitTest("any4", "1100", "1"),
+        new CircuitTest("any4", "1010", "1"),
+        new CircuitTest("any4", "1001", "1"),
+        new CircuitTest("any4", "0100", "1"),
+        new CircuitTest("any4", "0010", "1"),
+        new CircuitTest("any4", "0001", "1"),
+        new CircuitTest("any4", "1111", "1"),
+
+        new CircuitTest("all4", "0000", "0"),
+        new CircuitTest("all4", "1000", "0"),
+        new CircuitTest("all4", "1100", "0"),
+        new CircuitTest("all4", "1010", "0"),
+        new CircuitTest("all4", "1001", "0"),
+        new CircuitTest("all4", "0100", "0"),
+        new CircuitTest("all4", "0010", "0"),
+        new CircuitTest("all4", "0001", "0"),
+        new CircuitTest("all4", "0111", "0"),
+        new CircuitTest("all4", "1011", "0"),
+        new CircuitTest("all4", "1101", "0"),
+        new CircuitTest("all4", "1110", "0"),
+        new CircuitTest("all4", "1111", "1"),
+
         new CircuitTest("add1", "00", "0"), // zero
         new CircuitTest("add1", "01", "1"),
         new CircuitTest("add1", "10", "1"),
@@ -68,7 +95,7 @@ public class DefaultCircuitTest {
     };
 
     for (CircuitTest test : tests) {
-      if (test.circuitName.equals("add1") && Arrays.equals(test.input, parseBoolString("00"))) {
+      if (test.circuitName.equals("any4") && Arrays.equals(test.input, parseBoolString("1000"))) {
         System.out.println("hi");
       }
       try {

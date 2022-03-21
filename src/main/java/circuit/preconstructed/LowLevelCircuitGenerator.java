@@ -187,6 +187,9 @@ public class LowLevelCircuitGenerator {
     return new AnnotatedCircuit(new TwoWayDirectedGraph(dg), inputs, outputs, inputSizes, outputSizes);
   }
 
+  /**
+   * Takes two 1-bit inputs
+   */
   public static AnnotatedCircuit or() {
     DirectedGraph dg = new DirectedGraph();
     dg.ensureSize(5);
@@ -203,6 +206,79 @@ public class LowLevelCircuitGenerator {
     int[] outputSizes = new int[]{1};
 
     return new AnnotatedCircuit(new TwoWayDirectedGraph(dg), inputs, outputs, inputSizes, outputSizes);
+  }
+
+  /**
+   * Takes a single n-bit input
+   *
+   * @return a circuit which outputs true if any input bit is true, and false otherwise
+   */
+  public static AnnotatedCircuit any(int n) {
+    AnnotationCircuitBuilder acb = new AnnotationCircuitBuilder();
+    AnnotatedCircuit orCircuit = or();
+
+    int input = acb.addCircuit(identity(n));
+    acb.registerAsInput(input);
+
+    // If n=1, then input represents a single bit, and the 'or' of it is just itself
+    int orBit = input;
+    int prevCombinedBit = acb.addCircuit(getBits(n, 0, 1));
+    acb.plugCircuit(input, prevCombinedBit);
+
+    for (int i = 1; i < n; i++) {
+      // or together nodes i and i-1
+
+      int nextBit = acb.addCircuit(getBits(n, i, i+1));
+      acb.plugCircuit(input, nextBit);
+
+      orBit = acb.addCircuit(orCircuit);
+
+      acb.plugCircuit(prevCombinedBit, orBit);
+      acb.plugCircuit(nextBit, orBit);
+
+      prevCombinedBit = orBit;
+    }
+
+    acb.registerAsOutput(orBit);
+
+    return acb.toCircuit();
+  }
+
+
+  /**
+   * Takes a single n-bit input
+   *
+   * @return a circuit which outputs true if all inputs bits are true, and false otherwise
+   */
+  public static AnnotatedCircuit all(int n) {
+    AnnotationCircuitBuilder acb = new AnnotationCircuitBuilder();
+    AnnotatedCircuit andCircuit = and();
+
+    int input = acb.addCircuit(identity(n));
+    acb.registerAsInput(input);
+
+    // If n=1, then input represents a single bit, and the 'or' of it is just itself
+    int andBit = input;
+    int prevCombinedBit = acb.addCircuit(getBits(n, 0, 1));
+    acb.plugCircuit(input, prevCombinedBit);
+
+    for (int i = 1; i < n; i++) {
+      // or together nodes i and i-1
+
+      int nextBit = acb.addCircuit(getBits(n, i, i+1));
+      acb.plugCircuit(input, nextBit);
+
+      andBit = acb.addCircuit(andCircuit);
+
+      acb.plugCircuit(prevCombinedBit, andBit);
+      acb.plugCircuit(nextBit, andBit);
+
+      prevCombinedBit = andBit;
+    }
+
+    acb.registerAsOutput(andBit);
+
+    return acb.toCircuit();
   }
 
   /**
