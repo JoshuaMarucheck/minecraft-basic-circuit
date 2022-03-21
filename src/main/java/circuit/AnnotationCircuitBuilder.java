@@ -164,6 +164,10 @@ public class AnnotationCircuitBuilder extends CircuitBuilder {
       assert (mappedPos != -1);
     }
 
+    if (mappedPos + offset < 0) {
+      throw new IllegalStateException("Something weird happened... (Did you remember to coat your inputs with identities?)");
+    }
+
     return mappedPos + offset;
   }
 

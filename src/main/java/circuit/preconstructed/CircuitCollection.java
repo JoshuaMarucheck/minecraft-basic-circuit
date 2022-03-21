@@ -33,6 +33,10 @@ public class CircuitCollection {
     return get(circuitName) != null;
   }
 
+  public void addAll(CircuitCollection other) {
+    namedCircuits.putAll(other.namedCircuits);
+  }
+
   public AnnotatedCircuit getOrLoad(File file) throws IOException, MissingCircuitDependencyException {
     String circuitName = getCircuitName(file);
     AnnotatedCircuit circuit = get(circuitName);

@@ -37,6 +37,32 @@ public class LowLevelCircuitGenerator {
     return cc;
   }
 
+  public CircuitCollection operators(int bitLength) throws IOException, MissingCircuitDependencyException {
+    CircuitCollection cc = new CircuitCollection();
+
+    AnnotatedCircuit xor;
+    try {
+      xor = circuitCollection.loadFromFile(new File(root + "xor.txt"), true, false);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+
+    cc.registerCircuit("+", canonicalGenerator.addition(bitLength));
+    // <<, >>, ^, |, &, !
+
+    for (int i = 1; i <= bitLength; i *= 2) {
+      cc.registerCircuit("<<" + i, leftShift(i, bitLength));
+      cc.registerCircuit(">>" + i, rightShift(i, bitLength));
+    }
+
+    cc.registerCircuit("|", extendBitwise(or(), bitLength));
+    cc.registerCircuit("&", extendBitwise(and(), bitLength));
+    cc.registerCircuit("^", extendBitwise(xor, bitLength));
+    cc.registerCircuit("!", logicalNegation(bitLength));
+
+    return cc;
+  }
+
   private static <K, V> Map<K, V> copyMap(Map<K, V> map) {
     HashMap<K, V> r = new HashMap<K, V>();
     for (K key : map.keySet()) {
@@ -113,7 +139,7 @@ public class LowLevelCircuitGenerator {
   public static AnnotatedCircuit getBits(int inputSize, int bitsStart, int bitsEnd) {
     int outputSize = bitsEnd - bitsStart;
     if (outputSize < 0) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException("bitsEnd comes before bitsStart! (bitsStart=" + bitsStart + ", bitsEnd=" + bitsEnd + ")");
     }
 
     DirectedGraph dg = new DirectedGraph();
@@ -228,7 +254,7 @@ public class LowLevelCircuitGenerator {
     for (int i = 1; i < n; i++) {
       // or together nodes i and i-1
 
-      int nextBit = acb.addCircuit(getBits(n, i, i+1));
+      int nextBit = acb.addCircuit(getBits(n, i, i + 1));
       acb.plugCircuit(input, nextBit);
 
       orBit = acb.addCircuit(orCircuit);
@@ -265,7 +291,7 @@ public class LowLevelCircuitGenerator {
     for (int i = 1; i < n; i++) {
       // or together nodes i and i-1
 
-      int nextBit = acb.addCircuit(getBits(n, i, i+1));
+      int nextBit = acb.addCircuit(getBits(n, i, i + 1));
       acb.plugCircuit(input, nextBit);
 
       andBit = acb.addCircuit(andCircuit);
@@ -277,6 +303,123 @@ public class LowLevelCircuitGenerator {
     }
 
     acb.registerAsOutput(andBit);
+
+    return acb.toCircuit();
+  }
+
+  /**
+   * Treats the value as big-endian (i.e. shifts bits towards the larger-value indices).
+   * <p>
+   * Logical shift (fills the new values with 0s.
+   */
+  public static AnnotatedCircuit leftShift(int shiftSize, int bitLength) {
+    if (shiftSize < 0 || bitLength < 0) {
+      throw new IllegalArgumentException("Bit size and shift length must be positive");
+    }
+    if (shiftSize > bitLength) {
+      throw new IllegalArgumentException("Shift length must be at most bit length");
+    }
+    AnnotationCircuitBuilder acb = new AnnotationCircuitBuilder();
+
+    int input = acb.addCircuit(identity(bitLength));
+    acb.registerAsInput(input);
+
+    int get = acb.addCircuit(getBits(bitLength, 0, bitLength - shiftSize));
+    acb.plugCircuit(input, get);
+
+    boolean[] zeros = new boolean[shiftSize];
+    Arrays.fill(zeros, false);
+    int side = acb.addCircuit(constant(zeros));
+
+    int mergeId = acb.addCircuit(merge(new int[]{shiftSize, bitLength - shiftSize}));
+    acb.plugCircuit(side, mergeId);
+    acb.plugCircuit(get, mergeId);
+    acb.registerAsOutput(mergeId);
+
+    return acb.toCircuit();
+  }
+
+  /**
+   * Treats the value as big-endian (i.e. shifts bits towards the larger-value indices).
+   * <p>
+   * Logical shift (fills the new values with 0s.
+   */
+  public static AnnotatedCircuit rightShift(int shiftSize, int bitLength) {
+    if (shiftSize < 0 || bitLength < 0) {
+      throw new IllegalArgumentException("Bit size and shift length must be positive");
+    }
+    if (shiftSize > bitLength) {
+      throw new IllegalArgumentException("Shift length must be at most bit length");
+    }
+    AnnotationCircuitBuilder acb = new AnnotationCircuitBuilder();
+
+    int input = acb.addCircuit(identity(bitLength));
+    acb.registerAsInput(input);
+
+    int get = acb.addCircuit(getBits(bitLength, shiftSize, bitLength));
+    acb.plugCircuit(input, get);
+
+    boolean[] zeros = new boolean[shiftSize];
+    Arrays.fill(zeros, false);
+    int side = acb.addCircuit(constant(zeros));
+
+    int mergeId = acb.addCircuit(merge(new int[]{bitLength - shiftSize, shiftSize}));
+    acb.plugCircuit(get, mergeId);
+    acb.plugCircuit(side, mergeId);
+    acb.registerAsOutput(mergeId);
+
+    return acb.toCircuit();
+  }
+
+  /**
+   * Constructs a circuit which does lots of 1-bit pairwise operations in parallel
+   *
+   * @param circuit A circuit with two 1-bit inputs and one 1-bit output
+   */
+  public static AnnotatedCircuit extendBitwise(AnnotatedCircuit circuit, int bitLength) {
+    AnnotationCircuitBuilder acb = new AnnotationCircuitBuilder();
+
+    int input1 = acb.addCircuit(identity(bitLength));
+    int input2 = acb.addCircuit(identity(bitLength));
+    acb.registerAsInput(input1);
+    acb.registerAsInput(input2);
+
+    int[] outputSizes = new int[bitLength];
+    Arrays.fill(outputSizes, 1);
+    int output = acb.addCircuit(merge(outputSizes));
+    acb.registerAsOutput(output);
+
+    for (int i = 0; i < bitLength; i++) {
+      AnnotatedCircuit get = getBits(bitLength, i, i + 1);
+
+      int bit1 = acb.addCircuit(get);
+      int bit2 = acb.addCircuit(get);
+
+      acb.plugCircuit(input1, bit1);
+      acb.plugCircuit(input2, bit2);
+
+      int combine = acb.addCircuit(circuit);
+      acb.plugCircuit(bit1, combine);
+      acb.plugCircuit(bit2, combine);
+
+      acb.plugCircuit(combine, output);
+    }
+
+    return acb.toCircuit();
+  }
+
+  public static AnnotatedCircuit logicalNegation(int bitLength) {
+    AnnotationCircuitBuilder acb = new AnnotationCircuitBuilder();
+
+    int input = acb.addCircuit(identity(bitLength));
+    int mid = acb.addCircuit(any(bitLength));
+    int output = acb.addCircuit(invert(1));
+
+    acb.plugCircuit(input, mid);
+    acb.plugCircuit(mid, output);
+
+    acb.registerAsInput(input);
+    acb.registerAsOutput(output);
 
     return acb.toCircuit();
   }

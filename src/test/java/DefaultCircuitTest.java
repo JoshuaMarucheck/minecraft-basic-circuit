@@ -11,7 +11,11 @@ public class DefaultCircuitTest {
 
   public static void main(String[] args) throws Exception {
     CircuitCollection cc = LowLevelCircuitGenerator.defaultNamedCircuits();
+
     LowLevelCircuitGenerator gen = LowLevelCircuitGenerator.canonicalGenerator;
+
+    cc.addAll(gen.operators(8));
+
     cc.registerCircuit("add1", gen.addition(1));
     cc.registerCircuit("add2", gen.addition(2));
 
@@ -97,6 +101,15 @@ public class DefaultCircuitTest {
         new CircuitTest("add2", "1011", "00"), // overflow works
         new CircuitTest("add2", "0101", "00"),
         new CircuitTest("add2", "1111", "01"),
+
+        // our numbers are little-endian, but shifting is bit-endian
+        new CircuitTest("<<2", "00101100", "00001011"),
+        new CircuitTest("<<4", "00101100", "00000010"),
+
+        new CircuitTest(">>2", "00101100", "10110000"),
+        new CircuitTest(">>4", "00101100", "11000000"),
+
+        new CircuitTest("+", "0010110001000101", "01101011"),
     };
 
     for (CircuitTest test : tests) {
