@@ -67,7 +67,7 @@ public class AnnotationCircuitBuilder extends CircuitBuilder {
     outputCircuits.add(circuit);
   }
 
-  private static int circuitMemorySize(Circuit circuit) {
+  static int circuitMemorySize(Circuit circuit) {
     return circuit.size() - circuit.inputSize();
   }
 
@@ -89,7 +89,6 @@ public class AnnotationCircuitBuilder extends CircuitBuilder {
   }
 
   /**
-   *
    * @param circuitId
    * @return The number of bits that this sub-circuit gets from other sub-circuits (as opposed to being inputs to the full circuit)
    */
@@ -116,35 +115,53 @@ public class AnnotationCircuitBuilder extends CircuitBuilder {
    * @return The position in full-circuit memory of the specified node
    */
   private int calculatePositionOfNode(int circuitId, int localNodeId, int[] circuitPositionOffsets, HashMap<Circuit, int[]> positionMaps) {
-    // TODO figure out why self loops are forming
-    Circuit circuit = circuits.get(circuitId);
-
     int mappedPos;
     int offset;
 
+    Circuit circuit = circuits.get(circuitId);
     int inputIdx = circuit.getInputIndex(localNodeId);
 
-    inputSearch:
-    if (inputIdx != -1) {
-      // localNodeId is an input to this circuit, meaning we have to go find that input
-      // That input is an output from another sub-circuit, hopefully
-      int runningInputSize = 0;
+    if (inputIdx != -1 && !inputCircuits.contains(circuitId)) {
+      // Useless init so the compiler doesn't complain
+      mappedPos = -1;
+      offset = -1;
+      /* If a circuit has a node which is
+       * both input and output (and is not
+       * input to the circuit as a whole),
+       * then when we find that circuit as
+       * an input, we have to recurse on
+       * that circuit to find its input.
+       */
+      inputSearch:
+      while (inputIdx != -1 && !inputCircuits.contains(circuitId)) {
+        // localNodeId is an input to this circuit, meaning we have to go find that input
+        // That input is an output from another sub-circuit, hopefully
+        int runningInputSize = 0;
 
-      for (int inputCircuitId : circuitInputs.get(circuitId)) {
-        Circuit inputCircuit = circuits.get(inputCircuitId);
-        if (inputIdx < runningInputSize + inputCircuit.outputSize()) {
-          int posInInputCircuit = inputCircuit.getOutput(inputIdx - runningInputSize);
-          mappedPos = positionMaps.get(inputCircuit)[posInInputCircuit];
-          offset = circuitPositionOffsets[inputCircuitId];
-          break inputSearch;
+        for (int inputCircuitId : circuitInputs.get(circuitId)) {
+          Circuit inputCircuit = circuits.get(inputCircuitId);
+          if (inputIdx < runningInputSize + inputCircuit.outputSize()) {
+            int posInInputCircuit = inputCircuit.getOutput(inputIdx - runningInputSize);
+            mappedPos = positionMaps.get(inputCircuit)[posInInputCircuit];
+            offset = circuitPositionOffsets[inputCircuitId];
+            assert (mappedPos != -1);
+            assert (circuitId != inputCircuitId);
+            localNodeId = posInInputCircuit;
+            circuitId = inputCircuitId;
+            circuit = circuits.get(circuitId);
+            inputIdx = circuit.getInputIndex(localNodeId);
+            continue inputSearch;
+          }
+          runningInputSize += inputCircuit.outputSize();
         }
-        runningInputSize += inputCircuit.outputSize();
-      }
 
-      throw new RuntimeException("Input to circuit not found");
+        throw new RuntimeException("Input to circuit not found");
+      }
+      assert (offset != -1);
     } else {
       mappedPos = positionMaps.get(circuit)[localNodeId];
       offset = circuitPositionOffsets[circuitId];
+      assert (mappedPos != -1);
     }
 
     return mappedPos + offset;
@@ -164,7 +181,11 @@ public class AnnotationCircuitBuilder extends CircuitBuilder {
     // for any circuit input which isn't explicitly taking from an output.
     int[] offsets = new int[circuits.size()];
     int runningOffset = 0;
+    HashMap<Circuit, int[]> positionMaps = new HashMap<Circuit, int[]>();
 
+    /*
+     * the value at offsets[i] is the sum of the number of non-(-1) values in all position maps of circuits before i.
+     */
     for (int i = 0; i < circuits.size(); i++) {
       offsets[i] = runningOffset;
       Circuit circuit = circuits.get(i);
@@ -172,17 +193,15 @@ public class AnnotationCircuitBuilder extends CircuitBuilder {
 
       ArrayList<Integer> circuitInput = circuitInputs.get(i);
       if (circuitInput.size() != ((AnnotatedCircuit) circuit).getMultibitInputCount()) {
+        assert (inputCircuits.contains(i));
+        assert (circuit.inputSize() - getPluggedInputSize(i) > 0);
         runningOffset += circuit.inputSize() - getPluggedInputSize(i);
       }
-    }
-    int totalSize = runningOffset;
 
-    builder.ensureSize(totalSize);
-
-    HashMap<Circuit, int[]> positionMaps = new HashMap<Circuit, int[]>();
-    for (Circuit circuit : circuits) {
       positionMaps.put(circuit, calculateMemoryPositionMap(circuit));
     }
+    int totalSize = runningOffset;
+    builder.ensureSize(totalSize);
 
     for (int circuitI = 0; circuitI < circuits.size(); circuitI++) {
       Circuit circuit = circuits.get(circuitI);
@@ -194,6 +213,10 @@ public class AnnotationCircuitBuilder extends CircuitBuilder {
 
         int mappedStart = calculatePositionOfNode(circuitI, start, offsets, positionMaps);
         int mappedEnd = calculatePositionOfNode(circuitI, end, offsets, positionMaps);
+
+        if (mappedStart == mappedEnd) {
+          throw new RuntimeException("Attempted to build self loop");
+        }
 
         builder.addEdge(mappedStart, mappedEnd);
       }

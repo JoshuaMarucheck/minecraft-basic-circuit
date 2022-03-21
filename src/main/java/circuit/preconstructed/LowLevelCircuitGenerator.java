@@ -257,12 +257,12 @@ public class LowLevelCircuitGenerator {
 
       // Now check for at least two bits being true, so we know whether to carry
 
-//      int carry = acb.addCircuit(atLeast2);
-//      acb.plugCircuit(bit1, carry);
-//      acb.plugCircuit(bit2, carry);
-//      acb.plugCircuit(prevCarry, carry);
-//
-//      prevCarry = carry;
+      int carry = acb.addCircuit(atLeast2);
+      acb.plugCircuit(bit1, carry);
+      acb.plugCircuit(bit2, carry);
+      acb.plugCircuit(prevCarry, carry);
+
+      prevCarry = carry;
     }
 
     return acb.toCircuit();

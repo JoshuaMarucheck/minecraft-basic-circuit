@@ -104,11 +104,13 @@ public class AnnotatedCircuit extends Circuit {
   }
 
   public String toString() {
-    return "AnnotatedCircuit: " + getMultibitInputCount() + " Inputs ("
+    return "AnnotatedCircuit: "
+        + getMultibitInputCount() + " Inputs ("
         + inputSize() + " bits), "
         + getMultibitOutputCount() + " Outputs ("
         + outputSize() + " bits), "
-        + size() + " bits total";
+        + size() + " bits total ("
+        + AnnotationCircuitBuilder.circuitMemorySize(this) + " bits in memory)";
   }
 
 

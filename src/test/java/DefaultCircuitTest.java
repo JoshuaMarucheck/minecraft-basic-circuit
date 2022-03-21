@@ -17,8 +17,6 @@ public class DefaultCircuitTest {
     cc.getOrLoad(new File(root + "specialized/xor3.txt"));
     cc.getOrLoad(new File(root + "specialized/atLeast2.txt"));
 
-//    cc.loadFromFile(new File("./src/main/java/circuit/preconstructed/resources/specialized/xor3.txt"), true, true);
-
     CircuitTest[] tests = new CircuitTest[]{
         new CircuitTest("atLeast2", "000", "0"),
         new CircuitTest("atLeast2", "100", "0"),
@@ -62,7 +60,7 @@ public class DefaultCircuitTest {
         new CircuitTest("add1", "11", "0"), // carry
 
         new CircuitTest("add2", "0000", "00"), // zero
-        new CircuitTest("add2", "0110", "11"), // digits don't interfere with each otehr
+        new CircuitTest("add2", "0110", "11"), // digits don't interfere with each other
         new CircuitTest("add2", "1010", "01"), // digits can carry
         new CircuitTest("add2", "1011", "00"), // overflow works
         new CircuitTest("add2", "0101", "00"),
