@@ -1,4 +1,4 @@
-1:a 1:b
+a:1 b:1
 both = and a b
 at_least_one = or a b
 r = and (not both) at_least_one

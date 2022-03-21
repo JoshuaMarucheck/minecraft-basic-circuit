@@ -79,8 +79,8 @@ public class GateFileParser {
         String varName;
 
         try {
-          varName = input.substring(colon + 1);
-          length = Integer.parseInt(input.substring(0, colon));
+          varName = input.substring(0, colon);
+          length = Integer.parseInt(input.substring(colon + 1));
         } catch (IndexOutOfBoundsException e) {
           varName = input;
           length = -1;

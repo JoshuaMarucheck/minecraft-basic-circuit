@@ -1,4 +1,4 @@
-1:a 1:b 1:c
+a:1 b:1 c:1
 state1 = and a b
 state2 = and b c
 state3 = and a c

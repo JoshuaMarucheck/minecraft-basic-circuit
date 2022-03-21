@@ -1,4 +1,4 @@
-1:a 1:b 1:c
+a:1 b:1 c:1
 left = xor a b
 r = xor left c
 r
