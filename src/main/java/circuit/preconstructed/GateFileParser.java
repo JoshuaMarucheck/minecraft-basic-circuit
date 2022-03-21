@@ -347,6 +347,8 @@ public class GateFileParser {
     String operator = tokenIter.next();
     if (operator.equals("=")) {
       try {
+        // Make sure to parse the expression before making a new alias,
+        // just in case the expression uses the old value.
         int exprId = parseExpression(tokenIter);
         this.makeAlias(name, new BitCollection(exprId, circuitBuilder.getCircuit(exprId).outputSize()));
       } catch (StrictCheckException e) {

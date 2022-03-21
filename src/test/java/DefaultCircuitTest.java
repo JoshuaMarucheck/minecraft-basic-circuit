@@ -1,6 +1,5 @@
 import circuit.Circuit;
 import circuit.preconstructed.CircuitCollection;
-import circuit.preconstructed.GateFileParser;
 import circuit.preconstructed.LowLevelCircuitGenerator;
 
 import java.io.File;
@@ -109,7 +108,7 @@ public class DefaultCircuitTest {
         new CircuitTest(">>2", "00101100", "10110000"),
         new CircuitTest(">>4", "00101100", "11000000"),
 
-        new CircuitTest("+", "0010110001000101", "01101011"),
+        new CircuitTest("+", "00101100 01000101", "01101011"),
     };
 
     for (CircuitTest test : tests) {
@@ -141,16 +140,26 @@ public class DefaultCircuitTest {
 
 
   private static boolean[] parseBoolString(String s) {
-    boolean[] r = new boolean[s.length()];
-    for (int i = 0; i < s.length(); i++) {
-      char c = s.charAt(i);
+    int spaces = 0;
+    for (char c : s.toCharArray()) {
+      if (c == ' ') {
+        spaces++;
+      }
+    }
 
+    boolean[] r = new boolean[s.length() - spaces];
+    int index = 0;
+    for (char c : s.toCharArray()) {
       switch (c) {
         case '0':
-          r[i] = false;
+          r[index] = false;
+          index++;
           break;
         case '1':
-          r[i] = true;
+          r[index] = true;
+          index++;
+          break;
+        case ' ':
           break;
         default:
           throw new IllegalArgumentException("Boolean string contained digit '" + c + "'; \"" + s + "\"");
