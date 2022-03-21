@@ -1,4 +1,0 @@
-1:a 1:b 1:c
-left = xor a b
-r = xor left c
-r

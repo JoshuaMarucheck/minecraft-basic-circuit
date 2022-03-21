@@ -1,5 +1,0 @@
-1:a 1:b
-both = and a b
-at_least_one = or a b
-r = and (not both) at_least_one
-r

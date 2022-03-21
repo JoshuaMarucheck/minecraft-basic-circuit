@@ -1,6 +1,0 @@
-1:a 1:b 1:c
-state1 = and a b
-state2 = and b c
-state3 = and a c
-r = or (or state1 state2) state3
-r
