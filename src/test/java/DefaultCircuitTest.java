@@ -1,9 +1,11 @@
 import circuit.Circuit;
 import circuit.DebugCircuit;
+import circuit.Pair;
 import circuit.preconstructed.CircuitCollection;
 import circuit.preconstructed.LowLevelCircuitGenerator;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -171,7 +173,13 @@ public class DefaultCircuitTest {
       throw new UnitTestFailException("Missing circuit!");
     }
     if (circuit instanceof DebugCircuit) {
-      Map<String, boolean[]> debugMap = ((DebugCircuit) circuit).simulateDebug(input);
+      ArrayList<Pair<String, boolean[]>> debugMap = ((DebugCircuit) circuit).simulateDebug(input);
+      ArrayList<Pair<String, String>> readableDebugMap = new ArrayList<Pair<String, String>>();
+      for (Pair<String, boolean[]> pair : debugMap) {
+        String s = pair.getFirst();
+        boolean[] output = pair.getSecond();
+        readableDebugMap.add(new Pair<String, String>(s, boolArrToStr(output)));
+      }
       System.out.println("hi");
     }
 

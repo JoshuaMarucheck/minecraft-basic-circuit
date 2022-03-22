@@ -198,7 +198,7 @@ public class Circuit {
     Set<Integer> initialAsserts = new HashSet<Integer>();
 
     for (Pair<Integer, Boolean> item : assertStateStack) {
-      initialAsserts.add(item.getK());
+      initialAsserts.add(item.getFirst());
     }
 
     for (int i : redstone.inputs()) {
@@ -212,8 +212,8 @@ public class Circuit {
 
       while (!assertStateStack.isEmpty()) {
         Pair<Integer, Boolean> item = assertStateStack.pop();
-        Integer i = item.getK();
-        Boolean b = item.getV();
+        Integer i = item.getFirst();
+        Boolean b = item.getSecond();
 
         if (b) {
           state[i] = TRUE;
@@ -248,7 +248,7 @@ public class Circuit {
   }
 
   public Circuit trim() {
-    return trimWithMapping().getK();
+    return trimWithMapping().getFirst();
   }
 
   /**
@@ -369,25 +369,6 @@ public class Circuit {
     }
     return val;
   }
-
-  public static class Pair<K, V> {
-    private K k;
-    private V v;
-
-    public Pair(K k, V v) {
-      this.k = k;
-      this.v = v;
-    }
-
-    public K getK() {
-      return k;
-    }
-
-    public V getV() {
-      return v;
-    }
-  }
-
 
   private static boolean contains(Integer[] arr, int x) {
     for (int i : arr) {

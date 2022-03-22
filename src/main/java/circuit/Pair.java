@@ -16,4 +16,8 @@ public class Pair<K, V> {
   public V getSecond() {
     return v;
   }
+
+  public String toString() {
+    return k.toString() + " -> " + v.toString();
+  }
 }

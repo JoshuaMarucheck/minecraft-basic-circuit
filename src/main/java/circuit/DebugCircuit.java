@@ -2,9 +2,7 @@ package circuit;
 
 import graph.TriState;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Stack;
+import java.util.*;
 
 public class DebugCircuit extends AnnotatedCircuit {
 
@@ -61,7 +59,7 @@ public class DebugCircuit extends AnnotatedCircuit {
    * @param input The input bits to the circuit
    * @return A map from global variable names to their multibit values
    */
-  public HashMap<String, boolean[]> simulateDebug(boolean[] input) {
+  public ArrayList<Pair<String, boolean[]>> simulateDebug(boolean[] input) {
     if (input.length != this.inputSize()) {
       throw new UnsupportedOperationException("Invalid input length: Got " + input.length + " bits when the circuit needed " + this.inputSize() + "!");
     }
@@ -75,15 +73,27 @@ public class DebugCircuit extends AnnotatedCircuit {
 
     TriState[] triState = simulateFull(assertStateStack);
 
-    HashMap<String, boolean[]> r = new HashMap<String, boolean[]>();
+    ArrayList<Pair<String, boolean[]>> r = new ArrayList<Pair<String, boolean[]>>();
 
-    for (Integer circuitId : globalNames.keySet()) {
+    // Order matters for output...
+    Integer[] circuitIds = new Integer[globalNames.size()];
+    {
+      int index = 0;
+      for (Integer circuitId : globalNames.keySet()) {
+        circuitIds[index] = circuitId;
+        index++;
+      }
+    }
+    Arrays.sort(circuitIds);
+
+
+    for (int circuitId : circuitIds) {
       String globalName = globalNames.get(circuitId);
 
       int[] outPositions = outputPositions.get(circuitId);
 
       boolean[] subOutput = new boolean[outPositions.length];
-      r.put(globalName, subOutput);
+      r.add(new Pair<String, boolean[]>(globalName, subOutput));
 
       int index = 0;
       for (int outputNode : outPositions) {
