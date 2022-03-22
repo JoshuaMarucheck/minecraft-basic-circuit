@@ -1,34 +1,45 @@
 package circuit;
 
-import com.sun.istack.internal.NotNull;
-
 import java.util.HashMap;
 
 public class DebugCircuitBuilder extends AnnotationCircuitBuilder {
   private HashMap<Integer, String> localNames;
   private HashMap<Integer, String> globalNames;
-  private HashMap<Integer, Integer[]> outputPositions;
-  ;
 
   public DebugCircuitBuilder() {
     super();
     localNames = new HashMap<Integer, String>();
     globalNames = new HashMap<Integer, String>();
-    outputPositions =  new HashMap<Integer, Integer[]>();
   }
 
   public void registerAsDebug(int circuitId, String globalName, String localName) {
-    Circuit circuit = circuits.get(circuitId);
+
 
     localNames.put(circuitId, localName);
     globalNames.put(circuitId, globalName);
-    outputPositions.put(circuitId, circuit.getOutputs());
+  }
+
+  private HashMap<Integer, int[]> constructOutputPositions() {
+    HashMap<Integer, int[]> outputPositions = new HashMap<Integer, int[]>();
+
+    for (Integer circuitId : localNames.keySet()) {
+      Circuit circuit = circuits.get(circuitId);
+      Integer[] circuitOutputs = circuit.getOutputs();
+      int[] outPos = new int[circuitOutputs.length];
+      for (int i = 0; i < circuitOutputs.length; i++) {
+        outPos[i] = calculatePositionOfNode(circuitId, circuitOutputs[i]);
+      }
+
+      outputPositions.put(circuitId, outPos);
+    }
+
+    return outputPositions;
   }
 
   public DebugCircuit toCircuit() {
     AnnotatedCircuit circuit = super.toCircuit();
 
-    return new DebugCircuit(circuit, globalNames, localNames, outputPositions);
+    return new DebugCircuit(circuit, globalNames, localNames, constructOutputPositions());
   }
 
 }

@@ -21,11 +21,11 @@ public class DebugCircuit extends AnnotatedCircuit {
    */
   protected HashMap<Integer, String> localNames;
   /**
-   * Sub circuit id to an array of global output positions in order
+   * Sub circuit id to an array of local output positions in order
    */
-  protected HashMap<Integer, Integer[]> outputPositions;
+  protected HashMap<Integer, int[]> outputPositions;
 
-  public DebugCircuit(AnnotatedCircuit ac, HashMap<Integer, String> globalNames, HashMap<Integer, String> localNames, HashMap<Integer, Integer[]> outputPositions) {
+  public DebugCircuit(AnnotatedCircuit ac, HashMap<Integer, String> globalNames, HashMap<Integer, String> localNames, HashMap<Integer, int[]> outputPositions) {
     super(ac.redstone, ac.inputs, ac.outputs, ac.inputSizes, ac.outputSizes);
     this.globalNames = globalNames;
     this.localNames = localNames;
@@ -80,7 +80,8 @@ public class DebugCircuit extends AnnotatedCircuit {
     for (Integer circuitId : globalNames.keySet()) {
       String globalName = globalNames.get(circuitId);
 
-      Integer[] outPositions = outputPositions.get(circuitId);
+      int[] outPositions = outputPositions.get(circuitId);
+
       boolean[] subOutput = new boolean[outPositions.length];
       r.put(globalName, subOutput);
 
