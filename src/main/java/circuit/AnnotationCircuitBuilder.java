@@ -13,11 +13,15 @@ import java.util.Iterator;
 public class AnnotationCircuitBuilder extends CircuitBuilder {
   private ArrayList<Integer> inputCircuits;
   private ArrayList<Integer> outputCircuits;
+  protected int[] circuitPositionOffsets;
+  protected HashMap<Circuit, int[]> positionMaps;
 
   public AnnotationCircuitBuilder() {
     super();
     inputCircuits = new ArrayList<Integer>();
     outputCircuits = new ArrayList<Integer>();
+    circuitPositionOffsets = null;
+    positionMaps = null;
   }
 
   /**
@@ -107,14 +111,49 @@ public class AnnotationCircuitBuilder extends CircuitBuilder {
   }
 
   /**
+   * Called by toCircuit().
+   *
+   * @return The total number of bits that the circuit needs in order to be represented
+   */
+  private int initOffsetsAndPosMap() {
+    // Note we're allowing constant values, so we want to make sure to add memory
+    // for any circuit input which isn't explicitly taking from an output.
+    circuitPositionOffsets = new int[circuits.size()];
+    positionMaps = new HashMap<Circuit, int[]>();
+    int runningOffset = 0;
+
+    /*
+     * the value at offsets[i] is the sum of the number of non-(-1) values in all position maps of circuits before i.
+     */
+    for (int i = 0; i < circuits.size(); i++) {
+      circuitPositionOffsets[i] = runningOffset;
+      Circuit circuit = circuits.get(i);
+      runningOffset += circuitMemorySize(circuit);
+
+      ArrayList<Integer> circuitInput = circuitInputs.get(i);
+      if (circuitInput.size() != ((AnnotatedCircuit) circuit).getMultibitInputCount()) {
+        assert (inputCircuits.contains(i));
+        assert (circuit.inputSize() - getPluggedInputSize(i) > 0);
+        runningOffset += circuit.inputSize() - getPluggedInputSize(i);
+      }
+
+      positionMaps.put(circuit, calculateMemoryPositionMap(circuit));
+    }
+    return runningOffset;
+  }
+
+  /**
    * Takes a given node within a sub-circuit, and finds its position in the overall circuit.
    * Note inputs and outputs are merged using this function.
+   * <p>
+   * Requires that initOffsetsAndPosMap() has been called after
+   * all circuits have been registered. (This is done automatically by toCircuit().)
    *
    * @param circuitId   The id of the circuit that the node is in.
    * @param localNodeId The id of the node with respect to the specified circuit.
    * @return The position in full-circuit memory of the specified node
    */
-  private int calculatePositionOfNode(int circuitId, int localNodeId, int[] circuitPositionOffsets, HashMap<Circuit, int[]> positionMaps) {
+  protected int calculatePositionOfNode(int circuitId, int localNodeId) {
     int mappedPos;
     int offset;
 
@@ -180,31 +219,7 @@ public class AnnotationCircuitBuilder extends CircuitBuilder {
      * However, each circuit has unique outputs.
      * So count outputs, not inputs.
      */
-
-    // Note we're allowing constant values, so we want to make sure to add memory
-    // for any circuit input which isn't explicitly taking from an output.
-    int[] offsets = new int[circuits.size()];
-    int runningOffset = 0;
-    HashMap<Circuit, int[]> positionMaps = new HashMap<Circuit, int[]>();
-
-    /*
-     * the value at offsets[i] is the sum of the number of non-(-1) values in all position maps of circuits before i.
-     */
-    for (int i = 0; i < circuits.size(); i++) {
-      offsets[i] = runningOffset;
-      Circuit circuit = circuits.get(i);
-      runningOffset += circuitMemorySize(circuit);
-
-      ArrayList<Integer> circuitInput = circuitInputs.get(i);
-      if (circuitInput.size() != ((AnnotatedCircuit) circuit).getMultibitInputCount()) {
-        assert (inputCircuits.contains(i));
-        assert (circuit.inputSize() - getPluggedInputSize(i) > 0);
-        runningOffset += circuit.inputSize() - getPluggedInputSize(i);
-      }
-
-      positionMaps.put(circuit, calculateMemoryPositionMap(circuit));
-    }
-    int totalSize = runningOffset;
+    int totalSize = initOffsetsAndPosMap();
     builder.ensureSize(totalSize);
 
     for (int circuitI = 0; circuitI < circuits.size(); circuitI++) {
@@ -215,8 +230,8 @@ public class AnnotationCircuitBuilder extends CircuitBuilder {
         int start = edge.getStart();
         int end = edge.getEnd();
 
-        int mappedStart = calculatePositionOfNode(circuitI, start, offsets, positionMaps);
-        int mappedEnd = calculatePositionOfNode(circuitI, end, offsets, positionMaps);
+        int mappedStart = calculatePositionOfNode(circuitI, start);
+        int mappedEnd = calculatePositionOfNode(circuitI, end);
 
         if (mappedStart == mappedEnd) {
           throw new RuntimeException("Attempted to build self loop");
@@ -233,7 +248,7 @@ public class AnnotationCircuitBuilder extends CircuitBuilder {
       Circuit inCircuit = circuits.get(inputCircuit);
       int[] posMap = positionMaps.get(inCircuit);
       for (int j = 0; j < inCircuit.inputSize(); j++) {
-        builder.registerInput(offsets[inputCircuit] + posMap[inCircuit.getInput(j)]);
+        builder.registerInput(circuitPositionOffsets[inputCircuit] + posMap[inCircuit.getInput(j)]);
       }
       inputSizes[i] = inCircuit.inputSize();
     }
@@ -244,7 +259,7 @@ public class AnnotationCircuitBuilder extends CircuitBuilder {
       Circuit outCircuit = circuits.get(outputCircuit);
       for (int j = 0; j < outCircuit.outputSize(); j++) {
         // Careful; if a given output is also an input, it belongs to a different circuit
-        int outputPos = calculatePositionOfNode(outputCircuit, outCircuit.getOutput(j), offsets, positionMaps);
+        int outputPos = calculatePositionOfNode(outputCircuit, outCircuit.getOutput(j));
         builder.registerOutput(outputPos);
       }
       outputSizes[i] = outCircuit.outputSize();

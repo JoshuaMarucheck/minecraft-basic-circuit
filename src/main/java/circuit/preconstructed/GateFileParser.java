@@ -1,7 +1,8 @@
 package circuit.preconstructed;
 
 import circuit.AnnotatedCircuit;
-import circuit.AnnotationCircuitBuilder;
+import circuit.DebugCircuit;
+import circuit.DebugCircuitBuilder;
 import circuit.Pair;
 import circuit.iterators.FilterIterator;
 import circuit.preconstructed.exceptions.ConstantValueException;
@@ -26,9 +27,9 @@ public class GateFileParser {
    * @throws NumberFormatException
    * @throws MissingCircuitDependencyException
    */
-  public static AnnotatedCircuit parse(Map<String, AnnotatedCircuit> namedCircuits, Iterator<String> lines, boolean strict, String name) throws NumberFormatException, MissingCircuitDependencyException {
+  public static DebugCircuit parse(Map<String, AnnotatedCircuit> namedCircuits, Iterator<String> lines, boolean strict, String name) throws NumberFormatException, MissingCircuitDependencyException {
     GateFileParser gp = new GateFileParser(namedCircuits, lines, strict);
-    AnnotatedCircuit circuit;
+    DebugCircuit circuit;
     try {
       circuit = gp.parseFile();
     } catch (RuntimeException e) {
@@ -46,7 +47,7 @@ public class GateFileParser {
   private HashMap<String, String> nameMapping;
   private HashMap<String, BitCollection> bitCollections;
   private Iterator<String> lines;
-  private AnnotationCircuitBuilder circuitBuilder;
+  private DebugCircuitBuilder circuitBuilder;
   private boolean strict;
 
 
@@ -55,7 +56,7 @@ public class GateFileParser {
     this.nameMapping = new HashMap<String, String>();
     this.bitCollections = new HashMap<String, BitCollection>();
     this.lines = new LineFilterIterator(lines);
-    this.circuitBuilder = new AnnotationCircuitBuilder();
+    this.circuitBuilder = new DebugCircuitBuilder();
     this.strict = strict;
   }
 
@@ -140,7 +141,10 @@ public class GateFileParser {
         circuitBuilder.registerAsInput(circuitId);
 
         BitCollection bc = new BitCollection(circuitId, length);
-        makeAlias(varName, bc);
+        String globalName = makeAlias(varName, bc);
+
+        circuitBuilder.registerAsDebug(circuitId, globalName, varName);
+
         return getLocal(varName);
       } else {
         BitCollection bc = getLocal(varName);
@@ -216,7 +220,7 @@ public class GateFileParser {
   /**
    * @param varName The name to make an alias for
    * @param bc      The BitCollection to associate with this alias
-   * @return The alias
+   * @return The alias (i.e. the global name associated with this variable)
    */
   private String makeAlias(String varName, BitCollection bc) {
     String tempName = varName;
@@ -349,8 +353,11 @@ public class GateFileParser {
       try {
         // Make sure to parse the expression before making a new alias,
         // just in case the expression uses the old value.
+
         int exprId = parseExpression(tokenIter);
-        this.makeAlias(name, new BitCollection(exprId, circuitBuilder.getCircuit(exprId).outputSize()));
+        String globalName = this.makeAlias(name, new BitCollection(exprId, circuitBuilder.getCircuit(exprId).outputSize()));
+
+        circuitBuilder.registerAsDebug(exprId, globalName, name);
       } catch (StrictCheckException e) {
         throw new StrictCheckException("On line \"" + line + "\"\n" + e.getMessage());
       }
@@ -360,7 +367,7 @@ public class GateFileParser {
     }
   }
 
-  private AnnotatedCircuit parseFile() throws MissingCircuitDependencyException {
+  private DebugCircuit parseFile() throws MissingCircuitDependencyException {
     this.parseInitialBoundaryLine(lines.next(), strict);
 
     String line = lines.next();

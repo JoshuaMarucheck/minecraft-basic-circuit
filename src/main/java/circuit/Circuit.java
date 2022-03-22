@@ -130,6 +130,26 @@ public class Circuit {
     return outputs[i];
   }
 
+  private static Integer[] copyIntegerArr(Integer[] arr) {
+    Integer[] r = new Integer[arr.length];
+    System.arraycopy(arr, 0, r, 0, arr.length);
+    return r;
+  }
+
+  /**
+   * @return The ids of all input nodes in order
+   */
+  public Integer[] getInputs() {
+    return copyIntegerArr(inputs);
+  }
+
+  /**
+   * @return The ids of all output nodes in order
+   */
+  public Integer[] getOutputs() {
+    return copyIntegerArr(outputs);
+  }
+
   public int size() {
     return redstone.size();
   }

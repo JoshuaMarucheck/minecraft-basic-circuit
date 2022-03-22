@@ -5,8 +5,8 @@ import graph.TwoWayDirectedGraph;
 import java.util.Iterator;
 
 public class AnnotatedCircuit extends Circuit {
-  private int[] inputSizes;
-  private int[] outputSizes;
+  protected int[] inputSizes;
+  protected int[] outputSizes;
 
   public AnnotatedCircuit(TwoWayDirectedGraph redstone, Integer[] inputs, Integer[] outputs, int[] inputSizes, int[] outputSizes) {
     super(redstone, inputs, outputs);
