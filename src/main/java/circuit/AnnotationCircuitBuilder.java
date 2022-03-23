@@ -71,17 +71,36 @@ public class AnnotationCircuitBuilder extends CircuitBuilder {
     outputCircuits.add(circuit);
   }
 
+  /**
+   * Slow. Maybe don't use?
+   *
+   * @return true if this node is both an input to a subcircuit and has some output plugged into it inside this builder
+   */
+  private boolean isPluggedInput(int circuitId, int localNodeId) {
+    int plugSize = getPluggedInputSize(circuitId);
+    if (plugSize > 0) {
+      int inputIdx = circuits.get(circuitId).getInputIndex(localNodeId);
+      return inputIdx != -1 && inputIdx < plugSize;
+    } else {
+      return false;
+    }
+  }
+
   static int circuitMemorySize(Circuit circuit) {
     return circuit.size() - circuit.inputSize();
   }
 
-  private int[] calculateMemoryPositionMap(Circuit circuit) {
+  private int[] calculateMemoryPositionMap(int circuitId) {
+    // Don't allocate a position for plugged inputs
+    Circuit circuit = circuits.get(circuitId);
     int[] positionMap = new int[circuit.size()];
 
     int index = 0;
     for (int i = 0; i < circuit.size(); i++) {
-      // Skip if input and not output
-      if (circuit.getInputIndex(i) != -1 && circuit.getOutputIndex(i) == -1) {
+      // Skip if plugged input
+      // Since plugged inputs are passed on to other subcircuits.
+
+      if (isPluggedInput(circuitId, i)) {
         positionMap[i] = -1;
       } else {
         positionMap[i] = index;
@@ -102,12 +121,21 @@ public class AnnotationCircuitBuilder extends CircuitBuilder {
     AnnotatedCircuit circuit = (AnnotatedCircuit) circuits.get(circuitId);
     ArrayList<Integer> circuitInput = circuitInputs.get(circuitId);
 
-    if (circuitInput.size() != circuit.getMultibitInputCount()) {
-      for (int circuitInputId : circuitInput) {
-        runningOffset += circuits.get(circuitInputId).outputSize();
+    for (int circuitInputId : circuitInput) {
+      runningOffset += circuits.get(circuitInputId).outputSize();
+    }
+
+    return runningOffset;
+  }
+
+  private static int definedPositions(int[] mappedPositions) {
+    int r = 0;
+    for (int i : mappedPositions) {
+      if (i != -1) {
+        r++;
       }
     }
-    return runningOffset;
+    return r;
   }
 
   /**
@@ -125,19 +153,25 @@ public class AnnotationCircuitBuilder extends CircuitBuilder {
     /*
      * the value at offsets[i] is the sum of the number of non-(-1) values in all position maps of circuits before i.
      */
-    for (int i = 0; i < circuits.size(); i++) {
-      circuitPositionOffsets[i] = runningOffset;
-      Circuit circuit = circuits.get(i);
-      runningOffset += circuitMemorySize(circuit);
+    for (int circuitId = 0; circuitId < circuits.size(); circuitId++) {
+      circuitPositionOffsets[circuitId] = runningOffset;
+      Circuit circuit = circuits.get(circuitId);
+      int circuitSize = circuitMemorySize(circuit);
 
-      ArrayList<Integer> circuitInput = circuitInputs.get(i);
+      ArrayList<Integer> circuitInput = circuitInputs.get(circuitId);
       if (circuitInput.size() != ((AnnotatedCircuit) circuit).getMultibitInputCount()) {
-        assert (inputCircuits.contains(i));
-        assert (circuit.inputSize() - getPluggedInputSize(i) > 0);
-        runningOffset += circuit.inputSize() - getPluggedInputSize(i);
+        assert (inputCircuits.contains(circuitId));
+        assert (circuit.inputSize() - getPluggedInputSize(circuitId) > 0);
+        circuitSize += circuit.inputSize() - getPluggedInputSize(circuitId);
       }
 
-      positionMaps.put(circuit, calculateMemoryPositionMap(circuit));
+      int[] memoryMap = calculateMemoryPositionMap(circuitId);
+      positionMaps.put(circuit, memoryMap);
+      runningOffset += circuitSize;
+
+      if (definedPositions(memoryMap) != circuitSize) {
+        throw new RuntimeException("Memory map size doesn't match circuit size!");
+      }
     }
     return runningOffset;
   }
@@ -235,6 +269,10 @@ public class AnnotationCircuitBuilder extends CircuitBuilder {
 
         if (mappedStart == mappedEnd) {
           throw new RuntimeException("Attempted to build self loop");
+        }
+
+        if (mappedStart >= totalSize || mappedEnd >= totalSize) {
+          throw new RuntimeException("Edge is not within the graph!");
         }
 
         builder.addEdge(mappedStart, mappedEnd);
