@@ -314,10 +314,4 @@ public class DefaultCircuitTest {
       return circuit;
     }
   }
-
-  private static class UnitTestFailException extends Exception {
-    UnitTestFailException(String s) {
-      super(s);
-    }
-  }
 }

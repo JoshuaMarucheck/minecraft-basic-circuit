@@ -20,4 +20,15 @@ public class Pair<K, V> {
   public String toString() {
     return k.toString() + " -> " + v.toString();
   }
+
+  public int hashCode() {
+    return 31 * k.hashCode() + v.hashCode();
+  }
+
+  public boolean equals(Object obj) {
+    if (obj instanceof Pair) {
+      return ((Pair) obj).k.equals(this.k) && ((Pair) obj).v.equals(this.v);
+    }
+    return false;
+  }
 }
