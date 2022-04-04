@@ -40,20 +40,26 @@ public class Point3D {
     return taxicabDistance(p1, p2) == 1;
   }
 
+  public Iterator<Point3D> horizontalAdjacentPoints() {
+    return new AdjIter(4);
+  }
+
   public Iterator<Point3D> adjacentPoints() {
-    return new AdjIter();
+    return new AdjIter(6);
   }
 
   private class AdjIter implements Iterator<Point3D> {
     private int i;
+    private int limit;
 
-    private AdjIter() {
+    private AdjIter(int limit) {
       i = 0;
+      this.limit = limit;
     }
 
     @Override
     public boolean hasNext() {
-      return i <= 6;
+      return i <= limit;
     }
 
     @Override
@@ -64,19 +70,19 @@ public class Point3D {
           r = translate(1, 0, 0);
           break;
         case 1:
-          r = translate(-1, 0, 0);
-          break;
-        case 2:
-          r = translate(0, 1, 0);
-          break;
-        case 3:
-          r = translate(0, -1, 0);
-          break;
-        case 4:
           r = translate(0, 0, 1);
           break;
-        case 5:
+        case 2:
+          r = translate(-1, 0, 0);
+          break;
+        case 3:
           r = translate(0, 0, -1);
+          break;
+        case 4:
+          r = translate(0, 1, 0);
+          break;
+        case 5:
+          r = translate(0, -1, 0);
           break;
         default:
           throw new IllegalStateException("Iterator variable somehow out of range");
