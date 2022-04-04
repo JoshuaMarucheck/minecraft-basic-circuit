@@ -60,7 +60,6 @@ public class AStar<S> {
       totalCostMap.put(state, runningCost);
 
       for (S nextState : movesFunc.apply(state)) {
-//        S oldPrev = backtraceMap.get(nextState);
         Integer stepCost = costFunc.apply(state, nextState);
         if (totalCostMap.containsKey(nextState) && runningCost + stepCost >= totalCostMap.get(nextState)) {
           continue;
