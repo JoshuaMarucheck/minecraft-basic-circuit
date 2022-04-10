@@ -1,24 +1,24 @@
 package graph;
 
-public class Edge {
-  private Integer start;
-  private Integer end;
+public class Edge<T> {
+  private T start;
+  private T end;
 
-  public Edge(Integer start, Integer end) {
+  public Edge(T start, T end) {
     this.start = start;
     this.end = end;
   }
 
-  public Integer getStart() {
+  public T getStart() {
     return start;
   }
 
-  public Integer getEnd() {
+  public T getEnd() {
     return end;
   }
 
-  public Edge reverse() {
-    return new Edge(end, start);
+  public Edge<T> reverse() {
+    return new Edge<>(end, start);
   }
 
   public String toString() {

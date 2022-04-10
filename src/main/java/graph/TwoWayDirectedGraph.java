@@ -1,18 +1,16 @@
 package graph;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
 /**
  * Read only and protected, ideally
  */
-public class TwoWayDirectedGraph {
-  private DirectedGraph forward;
-  private DirectedGraph backward;
+public class TwoWayDirectedGraph<T> {
+  private DirectedGraph<T> forward;
+  private DirectedGraph<T> backward;
 
-  public TwoWayDirectedGraph(DirectedGraph graph) {
+  public TwoWayDirectedGraph(DirectedGraph<T> graph) {
     forward = graph.copy();
     backward = graph.invert();
   }
@@ -26,15 +24,15 @@ public class TwoWayDirectedGraph {
 //    return new TwoWayDirectedGraph(forward.copy(), backward.copy());
 //  }
 
-  public Iterator<Edge> getEdges() {
+  public Iterator<Edge<T>> getEdges() {
     return forward.getEdges();
   }
 
-  public Set<Integer> outNeighborhood(int node) {
+  public Set<T> outNeighborhood(T node) {
     return forward.outNeighborhood(node);
   }
 
-  public Set<Integer> inNeighborhood(int node) {
+  public Set<T> inNeighborhood(T node) {
     return backward.outNeighborhood(node);
   }
 
@@ -45,22 +43,22 @@ public class TwoWayDirectedGraph {
   /**
    * @return The set of nodes which aren't affected by the value of any other node
    */
-  public Set<Integer> inputs() {
+  public Set<T> inputs() {
     return backward.getNodesWithoutOutput();
   }
 
   /**
    * @return The set of nodes do not affect the value of any other node
    */
-  public Set<Integer> outputs() {
+  public Set<T> outputs() {
     return forward.getNodesWithoutOutput();
   }
 
-  public Set<Integer> traceForward(Integer[] input) {
+  public Set<T> traceForward(T[] input) {
     return forward.trace(input);
   }
 
-  public Set<Integer> traceBackward(Integer[] input) {
+  public Set<T> traceBackward(T[] input) {
     return backward.trace(input);
   }
 

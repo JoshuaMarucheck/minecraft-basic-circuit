@@ -4,21 +4,34 @@ import java.util.*;
 
 /**
  * A class for representing directed graphs.
- * Nodes are Integers.
+ * Nodes are type T.
  * <p>
  * The objective is to be able to add and remove nodes.
  * <p>
  * ids can be whatever. There's no way we're getting to 2 billion redstone torches.
+ * <p>
+ * Ideally, generator would be able to just keep generating ids.
  */
-public class DirectedGraph {
-  private ArrayList<Set<Integer>> adjList;
+public class DirectedGraph<T> {
+  private Map<T, Set<T>> adjList;
+  private Iterator<T> generator;
+  private Iterable<T> vertexSpace;
 
-  public DirectedGraph() {
-    this.adjList = new ArrayList<Set<Integer>>();
+  public DirectedGraph(Iterable<T> vertices) {
+    this(new HashMap<>(), vertices);
   }
 
-  public DirectedGraph(ArrayList<Set<Integer>> adjList) {
+  public DirectedGraph(Map<T, Set<T>> adjList, Iterable<T> vertices) {
     this.adjList = adjList;
+    this.vertexSpace = vertices;
+    this.generator = this.vertexSpace.iterator();
+  }
+
+  /**
+   * @return A new empty DirectedGraph with the same vertex space.
+   */
+  public DirectedGraph<T> copyBase() {
+    return new DirectedGraph<>(vertexSpace);
   }
 
   /**
@@ -28,20 +41,21 @@ public class DirectedGraph {
     return adjList.size();
   }
 
-  public int addNode() {
-    adjList.add(new HashSet<Integer>());
-    return adjList.size() - 1;
+  public T addNode() {
+    T node = generator.next();
+    adjList.put(node, new HashSet<T>());
+    return node;
   }
 
-  ArrayList<Set<Integer>> getAdjList() {
+  private Map<T, Set<T>> getAdjList() {
     return adjList;
   }
 
-  public DirectedGraph invert() {
-    DirectedGraph graph = new DirectedGraph();
+  public DirectedGraph<T> invert() {
+    DirectedGraph<T> graph = this.copyBase();
     graph.ensureSize(this.size());
-    for (Iterator<Edge> it = this.getEdges(); it.hasNext(); ) {
-      Edge edge = it.next();
+    for (Iterator<Edge<T>> it = this.getEdges(); it.hasNext(); ) {
+      Edge<T> edge = it.next();
       graph.addEdge(edge.reverse());
     }
     return graph;
@@ -53,23 +67,23 @@ public class DirectedGraph {
     }
   }
 
-  public void addEdge(Edge edge) {
+  public void addEdge(Edge<T> edge) {
     adjList.get(edge.getStart()).add(edge.getEnd());
   }
 
-  public Set<Integer> outNeighborhood(int node) {
+  public Set<T> outNeighborhood(T node) {
     return adjList.get(node);
   }
 
-  public boolean nodeHasOutput(int node) {
+  public boolean nodeHasOutput(T node) {
     return !adjList.get(node).isEmpty();
   }
 
-  public Set<Integer> getNodesWithoutOutput() {
-    Set<Integer> r = new HashSet<Integer>();
-    for (int i = 0; i < this.size(); i++) {
-      if (!this.nodeHasOutput(i)) {
-        r.add(i);
+  public Set<T> getNodesWithoutOutput() {
+    Set<T> r = new HashSet<>();
+    for (T node : adjList.keySet()) {
+      if (!this.nodeHasOutput(node)) {
+        r.add(node);
       }
     }
     return r;
@@ -81,20 +95,20 @@ public class DirectedGraph {
    * @param inputs The nodes which are manually fed inputs
    * @return The set of nodes which are hit by propagating forward from inputs
    */
-  public Set<Integer> trace(Integer[] inputs) {
-    Set<Integer> r = new HashSet<Integer>();
-    Stack<Integer> stack = new Stack<Integer>();
+  public Set<T> trace(T[] inputs) {
+    Set<T> r = new HashSet<>();
+    Stack<T> stack = new Stack<>();
 
-    for (Integer i : inputs) {
+    for (T i : inputs) {
       stack.push(i);
     }
 
     while (!stack.isEmpty()) {
-      Integer node = stack.pop();
+      T node = stack.pop();
       if (!r.contains(node)) {
         r.add(node);
 
-        for (Integer i : this.outNeighborhood(node)) {
+        for (T i : this.outNeighborhood(node)) {
           stack.push(i);
         }
       }
@@ -103,37 +117,47 @@ public class DirectedGraph {
     return r;
   }
 
-  public boolean hasEdge(Edge edge) {
+  public boolean hasEdge(Edge<T> edge) {
     return adjList.get(edge.getStart()).contains(edge.getEnd());
   }
 
-  public DirectedGraph copy() {
-    DirectedGraph dg = new DirectedGraph();
+  public DirectedGraph<T> copy() {
+    DirectedGraph<T> dg = this.copyBase();
     dg.ensureSize(this.size());
-    for (Iterator<Edge> edges = this.getEdges(); edges.hasNext(); ) {
-      Edge edge = edges.next();
+    for (Iterator<Edge<T>> edges = this.getEdges(); edges.hasNext(); ) {
+      Edge<T> edge = edges.next();
       dg.addEdge(edge);
     }
     return dg;
   }
 
-  public Iterator<Edge> getEdges() {
+  public Iterator<Edge<T>> getEdges() {
     return new EdgeIterator();
   }
 
-  private class EdgeIterator implements Iterator<Edge> {
-    private int start;
-    private Iterator<Integer> endIter;
+  private class EdgeIterator implements Iterator<Edge<T>> {
+    private T start;
+    private Iterator<T> endIter;
+    private Iterator<T> startIter;
 
     EdgeIterator() {
-      start = -1;
-      endIter = new EmptyIterator<Integer>();
+      startIter = vertexSpace.iterator();
+      nextStart();
+    }
+
+    private void nextStart() {
+      start = startIter.next();
+      Set<T> ends = adjList.get(start);
+      if (ends == null) {
+        endIter = new EmptyIterator<>();
+      } else {
+        endIter = ends.iterator();
+      }
     }
 
     private void prepareNext() {
-      while (start + 1 < adjList.size() && !endIter.hasNext()) {
-        start++;
-        endIter = adjList.get(start).iterator();
+      while (adjList.containsKey(start) && !endIter.hasNext()) {
+        nextStart();
       }
     }
 
@@ -142,15 +166,9 @@ public class DirectedGraph {
       return endIter.hasNext();
     }
 
-    public Edge next() {
+    public Edge<T> next() {
       prepareNext();
-      return new Edge(start, endIter.next());
-    }
-
-    public void remove() {
-      throw new UnsupportedOperationException();
+      return new Edge<>(start, endIter.next());
     }
   }
-
-
 }
