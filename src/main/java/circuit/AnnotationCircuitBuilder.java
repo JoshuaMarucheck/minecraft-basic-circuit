@@ -258,8 +258,8 @@ public class AnnotationCircuitBuilder extends CircuitBuilder {
 
     for (int circuitI = 0; circuitI < circuits.size(); circuitI++) {
       Circuit circuit = circuits.get(circuitI);
-      for (Iterator<Edge> edges = circuit.getEdges(); edges.hasNext(); ) {
-        Edge edge = edges.next();
+      for (Iterator<Edge<Integer>> edges = circuit.getEdges(); edges.hasNext(); ) {
+        Edge<Integer> edge = edges.next();
 
         int start = edge.getStart();
         int end = edge.getEnd();

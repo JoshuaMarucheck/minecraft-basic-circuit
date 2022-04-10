@@ -1,7 +1,7 @@
 package circuit;
 
-import graph.DirectedGraph;
 import graph.Edge;
+import graph.GenerativeDirectedGraph;
 import graph.TwoWayDirectedGraph;
 
 import java.util.ArrayList;
@@ -13,12 +13,12 @@ import java.util.ArrayList;
 public class SimpleCircuitBuilder {
   private ArrayList<Integer> inputs;
   private ArrayList<Integer> outputs;
-  private DirectedGraph<Integer> redstone;
+  private GenerativeDirectedGraph<Integer> redstone;
 
   public SimpleCircuitBuilder() {
     inputs = new ArrayList<Integer>();
     outputs = new ArrayList<Integer>();
-    redstone = DirectedGraph.integerBase();
+    redstone = GenerativeDirectedGraph.integerBase();
   }
 
   public int addNode() {

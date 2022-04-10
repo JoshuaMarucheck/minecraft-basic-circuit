@@ -1,7 +1,5 @@
 package graph;
 
-import circuit.SimpleCircuitBuilder;
-
 import java.util.*;
 
 /**
@@ -15,29 +13,14 @@ import java.util.*;
  * Ideally, generator would be able to just keep generating ids.
  */
 public class DirectedGraph<T> {
-  private Map<T, Set<T>> adjList;
-  private Iterator<T> generator;
-  private Iterable<T> vertexSpace;
+  protected Map<T, Set<T>> adjList;
 
-  public DirectedGraph(Iterable<T> vertices) {
-    this(new HashMap<>(), vertices);
+  public DirectedGraph() {
+    this(new HashMap<>());
   }
 
-  public DirectedGraph(Map<T, Set<T>> adjList, Iterable<T> vertices) {
+  public DirectedGraph(Map<T, Set<T>> adjList) {
     this.adjList = adjList;
-    this.vertexSpace = vertices;
-    this.generator = this.vertexSpace.iterator();
-  }
-
-  public static DirectedGraph<Integer> integerBase() {
-    return new DirectedGraph<>(new IntegerIterable());
-  }
-
-  /**
-   * @return A new empty DirectedGraph with the same vertex space.
-   */
-  public DirectedGraph<T> copyBase() {
-    return new DirectedGraph<>(vertexSpace);
   }
 
   /**
@@ -47,10 +30,8 @@ public class DirectedGraph<T> {
     return adjList.size();
   }
 
-  public T addNode() {
-    T node = generator.next();
-    adjList.put(node, new HashSet<T>());
-    return node;
+  public void addNode(T node) {
+    adjList.put(node, new HashSet<>());
   }
 
   private Map<T, Set<T>> getAdjList() {
@@ -58,8 +39,11 @@ public class DirectedGraph<T> {
   }
 
   public DirectedGraph<T> invert() {
-    DirectedGraph<T> graph = this.copyBase();
-    graph.ensureSize(this.size());
+    DirectedGraph<T> graph = new DirectedGraph<>();
+    for (T node : adjList.keySet()) {
+      graph.addNode(node);
+    }
+
     for (Iterator<Edge<T>> it = this.getEdges(); it.hasNext(); ) {
       Edge<T> edge = it.next();
       graph.addEdge(edge.reverse());
@@ -67,12 +51,9 @@ public class DirectedGraph<T> {
     return graph;
   }
 
-  public void ensureSize(int size) {
-    while (adjList.size() < size) {
-      this.addNode();
-    }
-  }
-
+  /**
+   * Probably make sure the graph has both endpoints as nodes first.
+   */
   public void addEdge(Edge<T> edge) {
     adjList.get(edge.getStart()).add(edge.getEnd());
   }
@@ -128,8 +109,12 @@ public class DirectedGraph<T> {
   }
 
   public DirectedGraph<T> copy() {
-    DirectedGraph<T> dg = this.copyBase();
-    dg.ensureSize(this.size());
+    DirectedGraph<T> dg = new DirectedGraph<>();
+
+    for (T node : adjList.keySet()) {
+      dg.addNode(node);
+    }
+
     for (Iterator<Edge<T>> edges = this.getEdges(); edges.hasNext(); ) {
       Edge<T> edge = edges.next();
       dg.addEdge(edge);
@@ -147,7 +132,7 @@ public class DirectedGraph<T> {
     private Iterator<T> startIter;
 
     EdgeIterator() {
-      startIter = vertexSpace.iterator();
+      startIter = adjList.keySet().iterator();
       nextStart();
     }
 

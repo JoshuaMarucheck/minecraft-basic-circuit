@@ -3,8 +3,8 @@ package circuit.preconstructed;
 import circuit.AnnotatedCircuit;
 import circuit.AnnotationCircuitBuilder;
 import circuit.preconstructed.exceptions.MissingCircuitDependencyException;
-import graph.DirectedGraph;
 import graph.Edge;
+import graph.GenerativeDirectedGraph;
 import graph.TwoWayDirectedGraph;
 
 import java.io.File;
@@ -72,7 +72,7 @@ public class LowLevelCircuitGenerator {
   }
 
   public static AnnotatedCircuit identity(int size) {
-    DirectedGraph<Integer> dg = DirectedGraph.integerBase();
+    GenerativeDirectedGraph<Integer> dg = GenerativeDirectedGraph.integerBase();
     dg.ensureSize(size);
 
     Integer[] inputs = new Integer[size];
@@ -85,7 +85,7 @@ public class LowLevelCircuitGenerator {
   }
 
   public static AnnotatedCircuit invert(int size) {
-    DirectedGraph<Integer> dg = DirectedGraph.integerBase();
+    GenerativeDirectedGraph<Integer> dg = GenerativeDirectedGraph.integerBase();
     dg.ensureSize(2 * size);
 
     Integer[] inputs = new Integer[size];
@@ -112,7 +112,7 @@ public class LowLevelCircuitGenerator {
   public static AnnotatedCircuit constant(boolean[] bits) {
     int size = bits.length;
 
-    DirectedGraph<Integer> dg = DirectedGraph.integerBase();
+    GenerativeDirectedGraph<Integer> dg = GenerativeDirectedGraph.integerBase();
     dg.ensureSize(size);
 
     Integer[] inputs = new Integer[0];
@@ -142,7 +142,7 @@ public class LowLevelCircuitGenerator {
       throw new IllegalArgumentException("bitsEnd comes before bitsStart! (bitsStart=" + bitsStart + ", bitsEnd=" + bitsEnd + ")");
     }
 
-    DirectedGraph<Integer> dg = DirectedGraph.integerBase();
+    GenerativeDirectedGraph<Integer> dg = GenerativeDirectedGraph.integerBase();
     dg.ensureSize(inputSize);
 
     Integer[] inputs = new Integer[inputSize];
@@ -180,7 +180,7 @@ public class LowLevelCircuitGenerator {
   public static AnnotatedCircuit merge(int[] inputSizes) {
     int outputSize = sum(inputSizes);
 
-    DirectedGraph<Integer> dg = DirectedGraph.integerBase();
+    GenerativeDirectedGraph<Integer> dg = GenerativeDirectedGraph.integerBase();
     dg.ensureSize(outputSize);
 
     Integer[] inputs = new Integer[outputSize];
@@ -197,7 +197,7 @@ public class LowLevelCircuitGenerator {
   }
 
   public static AnnotatedCircuit and() {
-    DirectedGraph<Integer> dg = DirectedGraph.integerBase();
+    GenerativeDirectedGraph<Integer> dg = GenerativeDirectedGraph.integerBase();
     dg.ensureSize(4);
 
     Integer[] inputs = new Integer[]{0, 1};
@@ -217,7 +217,7 @@ public class LowLevelCircuitGenerator {
    * Takes two 1-bit inputs
    */
   public static AnnotatedCircuit or() {
-    DirectedGraph<Integer> dg = DirectedGraph.integerBase();
+    GenerativeDirectedGraph<Integer> dg = GenerativeDirectedGraph.integerBase();
     dg.ensureSize(5);
 
     Integer[] inputs = new Integer[]{0, 2};

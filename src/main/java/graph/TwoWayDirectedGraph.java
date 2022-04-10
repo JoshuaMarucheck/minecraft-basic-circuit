@@ -7,8 +7,8 @@ import java.util.Set;
  * Read only and protected, ideally
  */
 public class TwoWayDirectedGraph<T> {
-  private DirectedGraph<T> forward;
-  private DirectedGraph<T> backward;
+  protected DirectedGraph<T> forward;
+  protected DirectedGraph<T> backward;
 
   public TwoWayDirectedGraph(DirectedGraph<T> graph) {
     forward = graph.copy();
