@@ -8,7 +8,7 @@ public class AnnotatedCircuit extends Circuit {
   protected int[] inputSizes;
   protected int[] outputSizes;
 
-  public AnnotatedCircuit(TwoWayDirectedGraph redstone, Integer[] inputs, Integer[] outputs, int[] inputSizes, int[] outputSizes) {
+  public AnnotatedCircuit(TwoWayDirectedGraph<Integer> redstone, Integer[] inputs, Integer[] outputs, int[] inputSizes, int[] outputSizes) {
     super(redstone, inputs, outputs);
     this.inputSizes = inputSizes;
     this.outputSizes = outputSizes;

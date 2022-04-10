@@ -1,5 +1,7 @@
 package graph;
 
+import circuit.SimpleCircuitBuilder;
+
 import java.util.*;
 
 /**
@@ -25,6 +27,10 @@ public class DirectedGraph<T> {
     this.adjList = adjList;
     this.vertexSpace = vertices;
     this.generator = this.vertexSpace.iterator();
+  }
+
+  public static DirectedGraph<Integer> integerBase() {
+    return new DirectedGraph<>(new IntegerIterable());
   }
 
   /**

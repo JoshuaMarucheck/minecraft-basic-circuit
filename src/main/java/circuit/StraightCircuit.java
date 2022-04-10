@@ -19,13 +19,13 @@ import static graph.TriState.*;
  * Hence, A node is true iff any of its inputs is false
  */
 public class StraightCircuit {
-  private TwoWayDirectedGraph redstone;
+  private TwoWayDirectedGraph<Integer> redstone;
   private int inputStartIdx;
   private int inputEndIdx;
   private int outputStartIdx;
   private int outputEndIdx;
 
-  public StraightCircuit(TwoWayDirectedGraph redstone, int inputStartIdx, int inputEndIdx, int outputStartIdx, int outputEndIdx) {
+  public StraightCircuit(TwoWayDirectedGraph<Integer> redstone, int inputStartIdx, int inputEndIdx, int outputStartIdx, int outputEndIdx) {
     this.redstone = redstone;
     this.inputStartIdx = inputStartIdx;
     this.inputEndIdx = inputEndIdx;

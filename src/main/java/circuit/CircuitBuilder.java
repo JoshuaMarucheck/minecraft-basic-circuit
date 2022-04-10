@@ -21,8 +21,8 @@ public class CircuitBuilder {
   private int outputCircuit;
 
   public CircuitBuilder() {
-    circuits = new ArrayList<Circuit>();
-    circuitInputs = new HashMap<Integer, ArrayList<Integer>>();
+    circuits = new ArrayList<>();
+    circuitInputs = new HashMap<>();
   }
 
   /**
@@ -101,8 +101,8 @@ public class CircuitBuilder {
     for (int circuitI = 0; circuitI < circuits.size(); circuitI++) {
       int offset = offsets[circuitI];
       Circuit circuit = circuits.get(circuitI);
-      for (Iterator<Edge> it = circuit.getEdges(); it.hasNext(); ) {
-        Edge edge = it.next();
+      for (Iterator<Edge<Integer>> it = circuit.getEdges(); it.hasNext(); ) {
+        Edge<Integer> edge = it.next();
 
         int start = edge.getStart();
         int end = edge.getEnd();

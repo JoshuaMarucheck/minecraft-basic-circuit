@@ -17,12 +17,12 @@ import static graph.TriState.*;
  * Hence, A node is true iff any of its inputs is false
  */
 public class Circuit {
-  protected TwoWayDirectedGraph redstone;
+  protected TwoWayDirectedGraph<Integer> redstone;
   protected Integer[] inputs;
   protected Integer[] outputs;
 
 
-  public Circuit(TwoWayDirectedGraph redstone, Integer[] inputs, Integer[] outputs) {
+  public Circuit(TwoWayDirectedGraph<Integer> redstone, Integer[] inputs, Integer[] outputs) {
     this.redstone = redstone;
     this.inputs = inputs;
     this.outputs = outputs;
@@ -57,7 +57,7 @@ public class Circuit {
       }
     }
 
-    Iterator<Edge> edges = getEdges();
+    Iterator<Edge<Integer>> edges = getEdges();
     while (edges.hasNext()) {
       Edge edge = edges.next();
       if (edge.getStart().equals(edge.getEnd())) {
@@ -154,7 +154,7 @@ public class Circuit {
     return redstone.size();
   }
 
-  public Iterator<Edge> getEdges() {
+  public Iterator<Edge<Integer>> getEdges() {
     return redstone.getEdges();
   }
 
@@ -163,11 +163,11 @@ public class Circuit {
       throw new UnsupportedOperationException("Invalid input length: Got " + input.length + " bits when the circuit needed " + this.inputSize() + "!");
     }
 
-    Stack<Pair<Integer, Boolean>> assertStateStack = new Stack<Pair<Integer, Boolean>>();
+    Stack<Pair<Integer, Boolean>> assertStateStack = new Stack<>();
 
     for (int i = 0; i < input.length; i++) {
       boolean b = input[i];
-      assertStateStack.push(new Pair<Integer, Boolean>(this.inputs[i], b));
+      assertStateStack.push(new Pair<>(this.inputs[i], b));
     }
 
     TriState[] state = simulateFull(assertStateStack);
@@ -195,7 +195,7 @@ public class Circuit {
     TriState[] state = new TriState[redstone.size()];
     Arrays.fill(state, UNKNOWN);
 
-    Set<Integer> initialAsserts = new HashSet<Integer>();
+    Set<Integer> initialAsserts = new HashSet<>();
 
     for (Pair<Integer, Boolean> item : assertStateStack) {
       initialAsserts.add(item.getFirst());
@@ -203,12 +203,12 @@ public class Circuit {
 
     for (int i : redstone.inputs()) {
       if (!initialAsserts.contains(i)) {
-        assertStateStack.push(new Pair<Integer, Boolean>(i, false));
+        assertStateStack.push(new Pair<>(i, false));
       }
     }
 
     while (!assertStateStack.isEmpty()) {
-      Set<Integer> checkStateSet = new HashSet<Integer>();
+      Set<Integer> checkStateSet = new HashSet<>();
 
       while (!assertStateStack.isEmpty()) {
         Pair<Integer, Boolean> item = assertStateStack.pop();
@@ -221,7 +221,7 @@ public class Circuit {
         } else {
           state[i] = FALSE;
           for (Integer j : redstone.outNeighborhood(i)) {
-            assertStateStack.push(new Pair<Integer, Boolean>(j, true));
+            assertStateStack.push(new Pair<>(j, true));
           }
         }
       }
@@ -235,12 +235,12 @@ public class Circuit {
             case TRUE:
               break;
             case FALSE:
-              assertStateStack.push(new Pair<Integer, Boolean>(checkNode, true));
+              assertStateStack.push(new Pair<>(checkNode, true));
               continue checkFlag;
           }
         }
         // Only TRUEs, so this node is FALSE
-        assertStateStack.push(new Pair<Integer, Boolean>(checkNode, false));
+        assertStateStack.push(new Pair<>(checkNode, false));
       }
     }
 
@@ -262,8 +262,8 @@ public class Circuit {
    * - torches which don't feed from input or to output
    */
   public Pair<Circuit, Map<Integer, Integer>> trimWithMapping() {
-    ArrayList<Integer> nodesToDelete = new ArrayList<Integer>();
-    ArrayList<Edge> nodesToMerge = new ArrayList<Edge>();
+    ArrayList<Integer> nodesToDelete = new ArrayList<>();
+    ArrayList<Edge<Integer>> nodesToMerge = new ArrayList<>();
 //    ArrayList<Edge> edgesToAdd = new ArrayList<Edge>();
 
     for (int node = 0; node < redstone.size(); node++) {
@@ -272,7 +272,7 @@ public class Circuit {
         Integer outputNode = unit(redstone.outNeighborhood(node));
 
         if (!(contains(outputs, outputNode) && contains(inputs, inputNode))) {
-          nodesToMerge.add(new Edge(inputNode, outputNode));
+          nodesToMerge.add(new Edge<>(inputNode, outputNode));
           nodesToDelete.add(node);
         }
       }
@@ -281,7 +281,7 @@ public class Circuit {
     // All nodes should be both either affected by input or affect output.
     // The only exception are constant nodes,
 
-    HashSet<Integer> allNodes = new HashSet<Integer>();
+    HashSet<Integer> allNodes = new HashSet<>();
     for (int i = 0; i < size(); i++) {
       allNodes.add(i);
     }
@@ -289,16 +289,16 @@ public class Circuit {
     Set<Integer> affectedByInput = redstone.traceForward(inputs);
     Set<Integer> affectsOutput = redstone.traceBackward(outputs);
 
-    Set<Integer> duallyAffected = new HashSet<Integer>(affectedByInput);
+    Set<Integer> duallyAffected = new HashSet<>(affectedByInput);
     duallyAffected.retainAll(affectsOutput);
 
-    Set<Integer> untouchedInputs = new HashSet<Integer>(allNodes);
+    Set<Integer> untouchedInputs = new HashSet<>(allNodes);
     untouchedInputs.removeAll(duallyAffected);
     untouchedInputs.retainAll(redstone.inputs());
 
-    Stack<Pair<Integer, Boolean>> assertStateStack = new Stack<Pair<Integer, Boolean>>();
+    Stack<Pair<Integer, Boolean>> assertStateStack = new Stack<>();
     for (Integer i : untouchedInputs) {
-      assertStateStack.push(new Pair<Integer, Boolean>(i, false));
+      assertStateStack.push(new Pair<>(i, false));
     }
 
     // If only knowing this much asserts that a state is not UNKNOWN, then that state is a constant
@@ -318,13 +318,13 @@ public class Circuit {
       }
     }
 
-    HashMap<Integer, Integer> nodeMapping = new HashMap<Integer, Integer>();
+    HashMap<Integer, Integer> nodeMapping = new HashMap<>();
     // -1 represents deletion
     for (Integer node : nodesToDelete) {
       nodeMapping.put(node, -1);
     }
 
-    for (Edge nodePair : nodesToMerge) {
+    for (Edge<Integer> nodePair : nodesToMerge) {
       nodeMapping.put(nodePair.getStart(), nodePair.getEnd());
     }
 
@@ -332,9 +332,9 @@ public class Circuit {
     SimpleCircuitBuilder scb = new SimpleCircuitBuilder();
     scb.ensureSize(newSize);
 
-    Iterator<Edge> edges = redstone.getEdges();
+    Iterator<Edge<Integer>> edges = redstone.getEdges();
     while (edges.hasNext()) {
-      Edge edge = edges.next();
+      Edge<Integer> edge = edges.next();
 
       int start = getMapping(nodeMapping, edge.getStart());
       int end = getMapping(nodeMapping, edge.getEnd());
@@ -351,12 +351,15 @@ public class Circuit {
       scb.registerOutput(getMapping(nodeMapping, i));
     }
 
-    return new Pair<Circuit, Map<Integer, Integer>>(scb.toCircuit(), nodeMapping);
+    return new Pair<>(scb.toCircuit(), nodeMapping);
   }
 
+  /**
+   * Follows cycles in {@code map}, starting from {@code val}, until an end point is reached.
+   */
   private static <V> V getMapping(Map<V, V> map, V val) {
     if (map.containsKey(val)) {
-      ArrayList<V> vs = new ArrayList<V>();
+      ArrayList<V> vs = new ArrayList<>();
 
       while (map.containsKey(val)) {
         vs.add(val);

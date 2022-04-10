@@ -13,12 +13,12 @@ import java.util.ArrayList;
 public class SimpleCircuitBuilder {
   private ArrayList<Integer> inputs;
   private ArrayList<Integer> outputs;
-  private DirectedGraph redstone;
+  private DirectedGraph<Integer> redstone;
 
   public SimpleCircuitBuilder() {
     inputs = new ArrayList<Integer>();
     outputs = new ArrayList<Integer>();
-    redstone = new DirectedGraph();
+    redstone = DirectedGraph.integerBase();
   }
 
   public int addNode() {
@@ -30,7 +30,7 @@ public class SimpleCircuitBuilder {
   }
 
   public void addEdge(Integer start, Integer end) {
-    redstone.addEdge(new Edge(start, end));
+    redstone.addEdge(new Edge<>(start, end));
   }
 
   public void registerInput(int inputNode) {
@@ -48,6 +48,6 @@ public class SimpleCircuitBuilder {
   }
 
   public Circuit toCircuit() {
-    return new Circuit(new TwoWayDirectedGraph(redstone), inputs.toArray(new Integer[0]), outputs.toArray(new Integer[0]));
+    return new Circuit(new TwoWayDirectedGraph<>(redstone), inputs.toArray(new Integer[0]), outputs.toArray(new Integer[0]));
   }
 }

@@ -72,7 +72,7 @@ public class LowLevelCircuitGenerator {
   }
 
   public static AnnotatedCircuit identity(int size) {
-    DirectedGraph dg = new DirectedGraph();
+    DirectedGraph<Integer> dg = DirectedGraph.integerBase();
     dg.ensureSize(size);
 
     Integer[] inputs = new Integer[size];
@@ -81,11 +81,11 @@ public class LowLevelCircuitGenerator {
     }
     int[] inputSizes = new int[]{size};
 
-    return new AnnotatedCircuit(new TwoWayDirectedGraph(dg), inputs, inputs, inputSizes, inputSizes);
+    return new AnnotatedCircuit(new TwoWayDirectedGraph<>(dg), inputs, inputs, inputSizes, inputSizes);
   }
 
   public static AnnotatedCircuit invert(int size) {
-    DirectedGraph dg = new DirectedGraph();
+    DirectedGraph<Integer> dg = DirectedGraph.integerBase();
     dg.ensureSize(2 * size);
 
     Integer[] inputs = new Integer[size];
@@ -94,13 +94,13 @@ public class LowLevelCircuitGenerator {
     for (int i = 0; i < size; i++) {
       inputs[i] = i;
       outputs[i] = i + size;
-      dg.addEdge(new Edge(i, i + size));
+      dg.addEdge(new Edge<>(i, i + size));
     }
 
     int[] inputSizes = new int[]{size};
     int[] outputSizes = new int[]{size};
 
-    return new AnnotatedCircuit(new TwoWayDirectedGraph(dg), inputs, outputs, inputSizes, outputSizes);
+    return new AnnotatedCircuit(new TwoWayDirectedGraph<>(dg), inputs, outputs, inputSizes, outputSizes);
   }
 
   /**
@@ -112,7 +112,7 @@ public class LowLevelCircuitGenerator {
   public static AnnotatedCircuit constant(boolean[] bits) {
     int size = bits.length;
 
-    DirectedGraph dg = new DirectedGraph();
+    DirectedGraph<Integer> dg = DirectedGraph.integerBase();
     dg.ensureSize(size);
 
     Integer[] inputs = new Integer[0];
@@ -121,14 +121,14 @@ public class LowLevelCircuitGenerator {
     for (int i = 0; i < size; i++) {
       outputs[i] = i;
       if (bits[i]) {
-        dg.addEdge(new Edge(dg.addNode(), i));
+        dg.addEdge(new Edge<>(dg.addNode(), i));
       }
     }
 
     int[] inputSizes = new int[]{};
     int[] outputSizes = new int[]{size};
 
-    return new AnnotatedCircuit(new TwoWayDirectedGraph(dg), inputs, outputs, inputSizes, outputSizes);
+    return new AnnotatedCircuit(new TwoWayDirectedGraph<>(dg), inputs, outputs, inputSizes, outputSizes);
   }
 
   /**
@@ -142,7 +142,7 @@ public class LowLevelCircuitGenerator {
       throw new IllegalArgumentException("bitsEnd comes before bitsStart! (bitsStart=" + bitsStart + ", bitsEnd=" + bitsEnd + ")");
     }
 
-    DirectedGraph dg = new DirectedGraph();
+    DirectedGraph<Integer> dg = DirectedGraph.integerBase();
     dg.ensureSize(inputSize);
 
     Integer[] inputs = new Integer[inputSize];
@@ -163,7 +163,7 @@ public class LowLevelCircuitGenerator {
     int[] inputSizes = new int[]{inputSize};
     int[] outputSizes = new int[]{outputSize};
 
-    return new AnnotatedCircuit(new TwoWayDirectedGraph(dg), inputs, outputs, inputSizes, outputSizes);
+    return new AnnotatedCircuit(new TwoWayDirectedGraph<>(dg), inputs, outputs, inputSizes, outputSizes);
   }
 
   private static int sum(int[] ints) {
@@ -180,7 +180,7 @@ public class LowLevelCircuitGenerator {
   public static AnnotatedCircuit merge(int[] inputSizes) {
     int outputSize = sum(inputSizes);
 
-    DirectedGraph dg = new DirectedGraph();
+    DirectedGraph<Integer> dg = DirectedGraph.integerBase();
     dg.ensureSize(outputSize);
 
     Integer[] inputs = new Integer[outputSize];
@@ -193,45 +193,45 @@ public class LowLevelCircuitGenerator {
 
     int[] outputSizes = new int[]{outputSize};
 
-    return new AnnotatedCircuit(new TwoWayDirectedGraph(dg), inputs, outputs, inputSizes, outputSizes);
+    return new AnnotatedCircuit(new TwoWayDirectedGraph<>(dg), inputs, outputs, inputSizes, outputSizes);
   }
 
   public static AnnotatedCircuit and() {
-    DirectedGraph dg = new DirectedGraph();
+    DirectedGraph<Integer> dg = DirectedGraph.integerBase();
     dg.ensureSize(4);
 
     Integer[] inputs = new Integer[]{0, 1};
     Integer[] outputs = new Integer[]{3};
 
-    dg.addEdge(new Edge(0, 2));
-    dg.addEdge(new Edge(1, 2));
-    dg.addEdge(new Edge(2, 3));
+    dg.addEdge(new Edge<>(0, 2));
+    dg.addEdge(new Edge<>(1, 2));
+    dg.addEdge(new Edge<>(2, 3));
 
     int[] inputSizes = new int[]{1, 1};
     int[] outputSizes = new int[]{1};
 
-    return new AnnotatedCircuit(new TwoWayDirectedGraph(dg), inputs, outputs, inputSizes, outputSizes);
+    return new AnnotatedCircuit(new TwoWayDirectedGraph<>(dg), inputs, outputs, inputSizes, outputSizes);
   }
 
   /**
    * Takes two 1-bit inputs
    */
   public static AnnotatedCircuit or() {
-    DirectedGraph dg = new DirectedGraph();
+    DirectedGraph<Integer> dg = DirectedGraph.integerBase();
     dg.ensureSize(5);
 
     Integer[] inputs = new Integer[]{0, 2};
     Integer[] outputs = new Integer[]{4};
 
-    dg.addEdge(new Edge(0, 1));
-    dg.addEdge(new Edge(1, 4));
-    dg.addEdge(new Edge(2, 3));
-    dg.addEdge(new Edge(3, 4));
+    dg.addEdge(new Edge<>(0, 1));
+    dg.addEdge(new Edge<>(1, 4));
+    dg.addEdge(new Edge<>(2, 3));
+    dg.addEdge(new Edge<>(3, 4));
 
     int[] inputSizes = new int[]{1, 1};
     int[] outputSizes = new int[]{1};
 
-    return new AnnotatedCircuit(new TwoWayDirectedGraph(dg), inputs, outputs, inputSizes, outputSizes);
+    return new AnnotatedCircuit(new TwoWayDirectedGraph<>(dg), inputs, outputs, inputSizes, outputSizes);
   }
 
   /**
