@@ -1,4 +1,4 @@
-package physical;
+package physical.things;
 
 import java.util.Iterator;
 
