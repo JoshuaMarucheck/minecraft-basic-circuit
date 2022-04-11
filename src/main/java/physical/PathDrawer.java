@@ -2,6 +2,7 @@ package physical;
 
 import graph.Edge;
 import graph.TwoWayDirectedWritableGraph;
+import physical.things.Bounded;
 import physical.things.Bounds;
 import physical.things.Point3D;
 
@@ -11,32 +12,38 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.function.Function;
 
-public class PathDrawer implements Iterable<Edge<Point3D>> {
-  private final HashSet<Point3D> points;
+public class PathDrawer implements Iterable<Edge<Point3D>>, Bounded {
+  private final HashSet<Point3D> emptyPoints;
+  private final HashSet<Point3D> filledPoints;
   private final TwoWayDirectedWritableGraph<Point3D> connections;
 
-  public PathDrawer(HashSet<Point3D> points) {
-    this.points = points;
+  public PathDrawer(HashSet<Point3D> filledPoints, HashSet<Point3D> emptyPoints) {
+    this.emptyPoints = emptyPoints;
+    this.filledPoints = filledPoints;
     connections = new TwoWayDirectedWritableGraph<>();
   }
 
   public PathDrawer() {
-    this(new HashSet<>());
+    this(new HashSet<>(), new HashSet<>());
   }
 
-  public void addPoint(Point3D p) {
-    points.add(p);
+  public void addFilledPoint(Point3D p) {
+    filledPoints.add(p);
+  }
+
+  public void addEmptyPoint(Point3D p) {
+    emptyPoints.add(p);
   }
 
   public void addConnection(Point3D from, Point3D to) {
-    points.add(from);
-    points.add(to);
+    filledPoints.add(from);
+    filledPoints.add(to);
     connections.addEdge(new Edge<>(from, to));
     connections.addEdge(new Edge<>(to, from));
   }
 
   public Bounds bounds() {
-    return Bounds.make(points);
+    return Bounds.make(filledPoints);
   }
 
   public Iterator<Edge<Point3D>> iterator() {
@@ -44,13 +51,21 @@ public class PathDrawer implements Iterable<Edge<Point3D>> {
   }
 
   public Iterator<Point3D> pointIterator() {
-    return points.iterator();
+    return filledPoints.iterator();
+  }
+
+  public boolean isFilledPoint(Point3D p) {
+    return filledPoints.contains(p);
+  }
+
+  public boolean isEmptyPoint(Point3D p) {
+    return emptyPoints.contains(p);
   }
 
   public PathDrawer transform(Function<Point3D, Point3D> f) {
     PathDrawer r = new PathDrawer();
-    for (Point3D p : points) {
-      r.addPoint(f.apply(p));
+    for (Point3D p : filledPoints) {
+      r.addFilledPoint(f.apply(p));
     }
     for (Iterator<Edge<Point3D>> it = connections.getEdges(); it.hasNext(); ) {
       Edge<Point3D> edge = it.next();
