@@ -46,6 +46,18 @@ public class AnnotatedEdge implements Iterable<Pair<Point3D, BlockConstant>> {
     return connection.getEnd();
   }
 
+  public TorchState getFirstTorchState() {
+    return firstTorch;
+  }
+
+  public TorchState getSecondTorchState() {
+    return secondTorch;
+  }
+
+  public Iterator<Point3D> emptyPoints() {
+    return emptyPoints.iterator();
+  }
+
   /**
    * @return An iterator over the blocks to fill in
    */
