@@ -31,8 +31,25 @@ public class Rotation implements Function<Point3D, Point3D> {
     return r;
   }
 
+  public Function<Point3D, Point3D> consecutiveRotations(int times) {
+    if (times < 0) {
+      throw new IllegalArgumentException();
+    }
+    if (times == 0) {
+      return new Identity<>();
+    }
+    Function<Point3D, Point3D> r = this;
+    for (int i = 1; i < times; i++) {
+      r = r.compose(this);
+    }
+    return r;
+  }
+
   @Override
   public Point3D apply(Point3D p) {
+    if (from == to) {
+      return p;
+    }
     int x = p.getX(), y = p.getY(), z = p.getZ(), tmp;
 
     switch (from) {

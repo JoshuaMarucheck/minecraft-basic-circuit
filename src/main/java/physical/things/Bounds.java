@@ -1,18 +1,24 @@
 package physical.things;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.function.Function;
 
 /**
  * Invariant: The values in {@code getLower()} are actually lower than the values in {@code getHigher()}
  */
-public class Bounds {
+public class Bounds implements Bounded {
   private Point3D lo;
   private Point3D hi;
 
   private Bounds(Point3D lower, Point3D upper) {
     lo = lower;
     hi = upper;
+  }
+
+  public Bounds transform(Function<Point3D, Point3D> func) {
+    return make(func.apply(lo), func.apply(hi));
   }
 
   public static Bounds make(Point3D p) {
@@ -38,9 +44,16 @@ public class Bounds {
       return Bounds.make(new Point3D(0, 0, 0), new Point3D(0, 0, 0));
     }
     Bounds b = Bounds.make(points.iterator().next());
-    return b.merge(points);
+    return b.mergePoints(points);
   }
 
+  public static Bounds makeFromBounds(Collection<? extends Bounded> bounds) {
+    if (bounds.isEmpty()) {
+      return Bounds.make(new Point3D(0, 0, 0), new Point3D(0, 0, 0));
+    }
+    Bounds b = bounds.iterator().next().bounds();
+    return b.mergeBounds(bounds);
+  }
 
   public Point3D getLower() {
     return lo;
@@ -51,10 +64,10 @@ public class Bounds {
   }
 
   public Bounds merge(Point3D p) {
-    return merge(Collections.singletonList(p));
+    return mergePoints(Collections.singletonList(p));
   }
 
-  public Bounds merge(Collection<Point3D> points) {
+  public Bounds mergePoints(Collection<Point3D> points) {
     int xmin = lo.getX(), ymin = lo.getY(), zmin = lo.getZ();
     int xmax = hi.getX(), ymax = hi.getY(), zmax = hi.getZ();
 
@@ -68,5 +81,24 @@ public class Bounds {
     }
 
     return new Bounds(new Point3D(xmin, ymin, zmin), new Point3D(xmax, ymax, zmax));
+  }
+
+  public Bounds merge(Bounds other) {
+    return mergePoints(Arrays.asList(other.getLower(), other.getUpper()));
+  }
+
+  public Bounds mergeBounds(Collection<? extends Bounded> blobs) {
+    Bounds r = this;
+
+    for (Bounded blob : blobs) {
+      r.merge(blob.bounds());
+    }
+
+    return r;
+  }
+
+  @Override
+  public Bounds bounds() {
+    return this;
   }
 }

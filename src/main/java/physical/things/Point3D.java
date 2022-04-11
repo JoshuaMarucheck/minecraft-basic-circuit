@@ -28,6 +28,10 @@ public class Point3D {
     return z;
   }
 
+  public Point3D negate() {
+    return new Point3D(-x, -y, -z);
+  }
+
   public Point3D translate(int x, int y, int z) {
     return new Point3D(this.x + x, this.y + y, this.z + z);
   }
@@ -36,8 +40,20 @@ public class Point3D {
     return Math.abs(p1.x - p2.x) + Math.abs(p1.y - p2.y) + Math.abs(p1.z - p2.z);
   }
 
+  public static int verticalDistance(Point3D p1, Point3D p2) {
+    return Math.abs(p1.y - p2.y);
+  }
+
+  public static int horizontalTaxicabDistance(Point3D p1, Point3D p2) {
+    return Math.abs(p1.x - p2.x) + Math.abs(p1.z - p2.z);
+  }
+
   public static boolean arePointsAdjacent(Point3D p1, Point3D p2) {
     return taxicabDistance(p1, p2) == 1;
+  }
+
+  public static boolean arePointsHorizAdjacent(Point3D p1, Point3D p2) {
+    return horizontalTaxicabDistance(p1, p2) == 1 && verticalDistance(p1, p2) == 0;
   }
 
   public Iterator<Point3D> horizontalAdjacentPoints() {
