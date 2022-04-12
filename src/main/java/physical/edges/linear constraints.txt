@@ -1,0 +1,16 @@
+Placing points:
+
+graph length:
+for x steps
+Distance is at max 8x
+
+find min path on the graph to all placed points
+find objective max distance function
+
+constraints?
+  y in [0,255]
+  x > 0 (with certain start and end points at x=0)
+  within valid distance of all currently placed points
+
+starting with start and end points placed first at given positions.
+and positions are ints

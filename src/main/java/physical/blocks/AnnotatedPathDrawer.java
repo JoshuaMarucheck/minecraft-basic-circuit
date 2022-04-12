@@ -17,7 +17,7 @@ public class AnnotatedPathDrawer implements Iterable<Pair<AnnotatedEdge, Point3D
    * <p>
    * The signal strength of an item is the number of steps forward from that item you can take.
    */
-  private final int HIGH_STRENGTH = 8;
+  public static final int HIGH_STRENGTH = 8;
 
   private final Set<Point3D> emptyPoints;
   private final Set<Point3D> filledPoints;

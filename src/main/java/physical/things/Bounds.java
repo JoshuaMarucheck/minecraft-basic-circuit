@@ -36,6 +36,29 @@ public class Bounds implements Bounded {
     return make(func.apply(lo), func.apply(hi));
   }
 
+  public Point3D midpoint() {
+    return new Point3D(
+        (lo.getX() + hi.getX()) / 2,
+        (lo.getY() + hi.getY()) / 2,
+        (lo.getZ() + hi.getZ()) / 2
+    );
+  }
+
+  /**
+   * @return A uniformly random int from lo (inclusive) to hi (exclusive)
+   */
+  private static int randInt(int lo, int hi) {
+    return (int) ((hi - lo) * Math.random()) + lo;
+  }
+
+  public Point3D randomInteriorPoint() {
+    return new Point3D(
+        randInt(lo.getX(), hi.getX() + 1),
+        randInt(lo.getY(), hi.getY() + 1),
+        randInt(lo.getZ(), hi.getZ() + 1)
+    );
+  }
+
   public static Bounds make(Point3D p) {
     return new Bounds(p, p);
   }

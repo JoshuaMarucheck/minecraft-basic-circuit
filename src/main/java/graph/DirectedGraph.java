@@ -76,6 +76,10 @@ public class DirectedGraph<T> {
     return r;
   }
 
+  public Set<T> nodes() {
+    return adjList.keySet();
+  }
+
   /**
    * Determines which nodes are touched if you set certain inputs
    *

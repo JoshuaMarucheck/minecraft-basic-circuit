@@ -27,6 +27,10 @@ public class TwoWayDirectedGraph<T> {
     return forward.getEdges();
   }
 
+  public Set<T> nodes() {
+    return forward.nodes();
+  }
+
   public Set<T> outNeighborhood(T node) {
     return forward.outNeighborhood(node);
   }
