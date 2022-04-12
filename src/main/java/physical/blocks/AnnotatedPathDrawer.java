@@ -168,7 +168,7 @@ public class AnnotatedPathDrawer implements Iterable<Pair<AnnotatedEdge, Point3D
   }
 
   public Bounds bounds() {
-    return Bounds.make(filledPoints).mergePoints(emptyPoints);
+    return Bounds.mergePoints(Bounds.make(filledPoints), emptyPoints);
   }
 
   public Iterator<Pair<AnnotatedEdge, Point3D>> iterator() {

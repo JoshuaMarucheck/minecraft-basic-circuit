@@ -1,5 +1,6 @@
 package physical.things;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -7,6 +8,12 @@ import java.util.function.Function;
 
 /**
  * Invariant: The values in {@code getLower()} are actually lower than the values in {@code getHigher()}
+ *
+ * {@code null} means there are no points contained in the Bounds.
+ * All functions are null-safe in this sense.
+ *
+ * Merge: finds a region which contains all given points
+ * Restrict: finds a region which all given ranges contain
  */
 public class Bounds implements Bounded {
   private Point3D lo;
@@ -15,6 +22,14 @@ public class Bounds implements Bounded {
   private Bounds(Point3D lower, Point3D upper) {
     lo = lower;
     hi = upper;
+  }
+
+  public Point3D getLower() {
+    return lo;
+  }
+
+  public Point3D getUpper() {
+    return hi;
   }
 
   public Bounds transform(Function<Point3D, Point3D> func) {
@@ -41,35 +56,57 @@ public class Bounds implements Bounded {
 
   public static Bounds make(Collection<Point3D> points) {
     if (points.isEmpty()) {
-      return Bounds.make(new Point3D(0, 0, 0), new Point3D(0, 0, 0));
+      return null;
     }
-    Bounds b = Bounds.make(points.iterator().next());
-    return b.mergePoints(points);
+
+    return mergePoints(make(points.iterator().next()), points);
   }
 
   public static Bounds makeFromBounds(Collection<? extends Bounded> bounds) {
     if (bounds.isEmpty()) {
-      return Bounds.make(new Point3D(0, 0, 0), new Point3D(0, 0, 0));
+      return null;
     }
-    Bounds b = bounds.iterator().next().bounds();
-    return b.mergeBounds(bounds);
+    ArrayList<Point3D> list = new ArrayList<>(bounds.size() * 2);
+    for (Bounded bounded : bounds) {
+      Bounds b = bounded.bounds();
+      if (b != null) {
+        list.add(b.getLower());
+        list.add(b.getUpper());
+      }
+    }
+
+    return make(list);
   }
 
-  public Point3D getLower() {
-    return lo;
+  public static Bounds merge(Bounds b, Point3D p) {
+    return mergePoints(b, Collections.singletonList(p));
   }
 
-  public Point3D getUpper() {
-    return hi;
-  }
+  public static Bounds mergePoints(Bounds b, Collection<Point3D> points) {
+    int xmin, ymin, zmin;
+    int xmax, ymax, zmax;
 
-  public Bounds merge(Point3D p) {
-    return mergePoints(Collections.singletonList(p));
-  }
+    if (b == null) {
+      if (points.isEmpty()) {
+        return null;
+      } else {
+        Point3D p = points.iterator().next();
+        xmin = p.getX();
+        ymin = p.getY();
+        zmin = p.getZ();
+        xmax = p.getX();
+        ymax = p.getY();
+        zmax = p.getZ();
+      }
+    } else {
+      xmin = b.getLower().getX();
+      ymin = b.getLower().getY();
+      zmin = b.getLower().getZ();
+      xmax = b.getUpper().getX();
+      ymax = b.getUpper().getY();
+      zmax = b.getUpper().getZ();
+    }
 
-  public Bounds mergePoints(Collection<Point3D> points) {
-    int xmin = lo.getX(), ymin = lo.getY(), zmin = lo.getZ();
-    int xmax = hi.getX(), ymax = hi.getY(), zmax = hi.getZ();
 
     for (Point3D p : points) {
       xmin = Math.min(xmin, p.getX());
@@ -83,18 +120,21 @@ public class Bounds implements Bounded {
     return new Bounds(new Point3D(xmin, ymin, zmin), new Point3D(xmax, ymax, zmax));
   }
 
-  public Bounds merge(Bounds other) {
-    return mergePoints(Arrays.asList(other.getLower(), other.getUpper()));
+  public static Bounds merge(Bounds b1, Bounds b2) {
+    if (b2 == null){
+      return b1;
+    }
+    return Bounds.mergePoints(b1, Arrays.asList(b2.getLower(), b2.getUpper()));
   }
 
-  public Bounds mergeBounds(Collection<? extends Bounded> blobs) {
-    Bounds r = this;
-
+  public static Bounds mergeBounds(Bounds b, Collection<? extends Bounded> blobs) {
     for (Bounded blob : blobs) {
-      r.merge(blob.bounds());
+      if (blob != null) {
+        b = Bounds.merge(b, blob.bounds());
+      }
     }
 
-    return r;
+    return b;
   }
 
   @Override

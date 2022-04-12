@@ -135,6 +135,8 @@ public class PhysicalCircuitConstructor {
   }
 
   /**
+   * Requires that this constructor is not empty.
+   *
    * @return A block map
    */
   public AbsolutePhysical3DMap toRedstoneSpace() {
