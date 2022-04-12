@@ -1,4 +1,4 @@
-package physical;
+package physical.blocks;
 
 import circuit.Pair;
 import physical.things.Bounds;

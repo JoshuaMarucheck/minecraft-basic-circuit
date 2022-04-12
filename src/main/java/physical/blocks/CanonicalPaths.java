@@ -1,4 +1,4 @@
-package physical;
+package physical.blocks;
 
 import graph.Edge;
 import physical.things.BlockConstant;
