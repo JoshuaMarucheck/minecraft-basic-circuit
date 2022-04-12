@@ -68,6 +68,9 @@ public class Circuit {
     return null;
   }
 
+  public TwoWayDirectedGraph<Integer> getGraph() {
+    return redstone;
+  }
 //  public Circuit copy() {
 //    Integer[] inputsCopy = new Integer[inputs.length];
 //    System.arraycopy(inputs, 0, inputsCopy, 0, inputs.length);

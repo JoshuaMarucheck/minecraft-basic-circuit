@@ -64,16 +64,9 @@ public class Bounds implements Bounded {
   }
 
   public static Bounds make(Point3D lower, Point3D upper) {
-    int x1 = lower.getX();
-    int y1 = lower.getY();
-    int z1 = lower.getZ();
-    int x2 = upper.getX();
-    int y2 = upper.getY();
-    int z2 = upper.getZ();
-
     return new Bounds(
-        new Point3D(Math.min(x1, x2), Math.min(y1, y2), Math.min(z1, z2)),
-        new Point3D(Math.max(x1, x2), Math.max(y1, y2), Math.max(z1, z2))
+        minPoint(lower, upper),
+        maxPoint(lower, upper)
     );
   }
 
@@ -164,18 +157,7 @@ public class Bounds implements Bounded {
     if (b1 == null || b2 == null) {
       return null;
     }
-    return new Bounds(
-        new Point3D(
-            Math.min(b1.getLower().getX(), b2.getLower().getX()),
-            Math.min(b1.getLower().getY(), b2.getLower().getY()),
-            Math.min(b1.getLower().getZ(), b2.getLower().getZ())
-        ),
-        new Point3D(
-            Math.max(b1.getUpper().getX(), b2.getUpper().getX()),
-            Math.max(b1.getUpper().getY(), b2.getUpper().getY()),
-            Math.max(b1.getUpper().getZ(), b2.getUpper().getZ())
-        )
-    );
+    return makeRestrict(maxPoint(b1.getLower(), b2.getLower()), minPoint(b1.getUpper(), b2.getUpper()));
   }
 
   public static Bounds restrict(Bounds b, Collection<? extends Bounded> blobs) {
@@ -184,6 +166,37 @@ public class Bounds implements Bounded {
     }
 
     return b;
+  }
+
+  public static Bounds makeRestrict(Point3D lower, Point3D upper) {
+    if (lower.getX() > upper.getX() || lower.getY() > upper.getY() || lower.getZ() > upper.getZ()) {
+      return null;
+    }
+    return new Bounds(lower, upper);
+  }
+
+  private static Point3D maxPoint(Point3D p1, Point3D p2) {
+    return new Point3D(
+        Math.max(p1.getX(), p2.getX()),
+        Math.max(p1.getY(), p2.getY()),
+        Math.max(p1.getZ(), p2.getZ())
+    );
+  }
+
+  private static Point3D minPoint(Point3D p1, Point3D p2) {
+    return new Point3D(
+        Math.min(p1.getX(), p2.getX()),
+        Math.min(p1.getY(), p2.getY()),
+        Math.min(p1.getZ(), p2.getZ())
+    );
+  }
+
+  public static Bounds lowerRestrict(Bounds b, Point3D p) {
+    return makeRestrict(maxPoint(b.getLower(), p), b.getUpper());
+  }
+
+  public static Bounds upperRestrict(Bounds b, Point3D p) {
+    return makeRestrict(b.getLower(), minPoint(p, b.getUpper()));
   }
 
   @Override
