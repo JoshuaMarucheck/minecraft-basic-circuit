@@ -1,7 +1,6 @@
 package graph;
 
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Read only and protected, ideally
@@ -62,5 +61,38 @@ public class TwoWayDirectedGraph<T> {
     return backward.trace(input);
   }
 
+  /**
+   * Computes the distance from the given node to each other node.
+   * Follows forward and backward links.
+   *
+   * Doesn't compute distances greater than or equal to maxDist. (Make it {@code null} to compute all distances.)
+   *
+   */
+  public Map<T, Integer> distanceMap(T start, Integer maxDist) {
+    HashMap<T, Integer> r = new HashMap<>();
 
+    int dist = 0;
+
+    Stack<T> layer = new Stack<>();
+    layer.push(start);
+
+    while (!layer.isEmpty() && (maxDist == null || dist < maxDist)) {
+      Stack<T> newLayer = new Stack<>();
+      for (T node : layer) {
+        if (!r.containsKey(node)) {
+          r.put(node, dist);
+          newLayer.addAll(outNeighborhood(node));
+          newLayer.addAll(inNeighborhood(node));
+        }
+      }
+      layer = newLayer;
+      dist++;
+    }
+
+    return r;
+  }
+
+  public Map<T, Integer> distanceMap(T start) {
+    return distanceMap(start, null);
+  }
 }
