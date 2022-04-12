@@ -8,10 +8,10 @@ import java.util.function.Function;
 
 /**
  * Invariant: The values in {@code getLower()} are actually lower than the values in {@code getHigher()}
- *
+ * <p>
  * {@code null} means there are no points contained in the Bounds.
  * All functions are null-safe in this sense.
- *
+ * <p>
  * Merge: finds a region which contains all given points
  * Restrict: finds a region which all given ranges contain
  */
@@ -121,7 +121,7 @@ public class Bounds implements Bounded {
   }
 
   public static Bounds merge(Bounds b1, Bounds b2) {
-    if (b2 == null){
+    if (b2 == null) {
       return b1;
     }
     return Bounds.mergePoints(b1, Arrays.asList(b2.getLower(), b2.getUpper()));
@@ -132,6 +132,32 @@ public class Bounds implements Bounded {
       if (blob != null) {
         b = Bounds.merge(b, blob.bounds());
       }
+    }
+
+    return b;
+  }
+
+  public static Bounds restrict(Bounds b1, Bounds b2) {
+    if (b1 == null || b2 == null) {
+      return null;
+    }
+    return new Bounds(
+        new Point3D(
+            Math.min(b1.getLower().getX(), b2.getLower().getX()),
+            Math.min(b1.getLower().getY(), b2.getLower().getY()),
+            Math.min(b1.getLower().getZ(), b2.getLower().getZ())
+        ),
+        new Point3D(
+            Math.max(b1.getUpper().getX(), b2.getUpper().getX()),
+            Math.max(b1.getUpper().getY(), b2.getUpper().getY()),
+            Math.max(b1.getUpper().getZ(), b2.getUpper().getZ())
+        )
+    );
+  }
+
+  public static Bounds restrict(Bounds b, Collection<? extends Bounded> blobs) {
+    for (Bounded blob : blobs) {
+      b = restrict(b, blob.bounds());
     }
 
     return b;
