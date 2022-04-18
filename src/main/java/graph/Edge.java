@@ -1,6 +1,7 @@
 package graph;
 
 import java.util.Iterator;
+import java.util.Objects;
 
 public class Edge<T> implements Iterable<T> {
   private T start;
@@ -55,5 +56,18 @@ public class Edge<T> implements Iterable<T> {
           throw new IllegalStateException();
       }
     }
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj instanceof Edge) {
+      return Objects.equals(start, ((Edge) obj).start) && Objects.equals(end, ((Edge) obj).end);
+    }
+    return false;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(start) * 37 + Objects.hashCode(end);
   }
 }
