@@ -137,21 +137,17 @@ public class DirectedGraph<T> {
 
     EdgeIterator() {
       startIter = adjList.keySet().iterator();
-      nextStart();
+      endIter = new EmptyIterator<>();
     }
 
     private void nextStart() {
       start = startIter.next();
       Set<T> ends = adjList.get(start);
-      if (ends == null) {
-        endIter = new EmptyIterator<>();
-      } else {
-        endIter = ends.iterator();
-      }
+      endIter = ends.iterator();
     }
 
     private void prepareNext() {
-      while (adjList.containsKey(start) && !endIter.hasNext()) {
+      while (startIter.hasNext() && !endIter.hasNext()) {
         nextStart();
       }
     }
