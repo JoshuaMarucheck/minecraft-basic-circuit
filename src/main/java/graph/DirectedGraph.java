@@ -76,6 +76,9 @@ public class DirectedGraph<T> {
     return r;
   }
 
+  /**
+   * @return a Set view of the nodes in this graph
+   */
   public Set<T> nodes() {
     return adjList.keySet();
   }

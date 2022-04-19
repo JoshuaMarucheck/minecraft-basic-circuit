@@ -23,10 +23,17 @@ public class TwoWayDirectedGraph<T> {
 //    return new TwoWayDirectedGraph(forward.copy(), backward.copy());
 //  }
 
+  public boolean hasEdge(Edge<T> edge) {
+    return forward.hasEdge(edge);
+  }
+
   public Iterator<Edge<T>> getEdges() {
     return forward.getEdges();
   }
 
+  /**
+   * @return a Set view of the nodes in this graph
+   */
   public Set<T> nodes() {
     return forward.nodes();
   }
