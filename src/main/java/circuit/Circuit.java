@@ -193,22 +193,46 @@ public class Circuit {
 
   }
 
+  /**
+   * @return The nodes which aren't inputs to the network and which don't have inputs
+   */
+  public Set<Integer> emptyInputs() {
+    Set<Integer> untouchedInputs = redstone.inputs();
+    untouchedInputs.removeAll(Arrays.asList(inputs));
+    return untouchedInputs;
+  }
+
+  /**
+   * Propagates signals along the circuit to nodes of provable state.
+   * <p>
+   * Fills in known empty inputs with FALSE so you don't have to. (See {@code emptyInputs()}  )
+   * <p>
+   * See {@code simulateRaw()}.
+   */
   public TriState[] simulateFull(Stack<Pair<Integer, Boolean>> assertStateStack) {
+    for (Integer i : emptyInputs()) {
+      assertStateStack.push(new Pair<>(i, false));
+    }
+
+    return simulateRaw(assertStateStack);
+  }
+
+  /**
+   * Propagates signals along the circuit to nodes of provable state.
+   * That is, given the inputs, any state associated with a node will be its state,
+   * where UNKNOWN means changing an unset input may change the state of that node.
+   * <p>
+   * Technically, you could probably prove more about certain points having constant values
+   * (e.g. "A or not A" is always true, but if A is unknown
+   * then this algorithm will mark the overall as unknown as well.)
+   * <p>
+   * You have to fill in all known states yourself.
+   * Consider adding all of {@code emptyInputs()} as {@code false}.
+   */
+  public TriState[] simulateRaw(Stack<Pair<Integer, Boolean>> assertStateStack) {
 
     TriState[] state = new TriState[redstone.size()];
     Arrays.fill(state, UNKNOWN);
-
-    Set<Integer> initialAsserts = new HashSet<>();
-
-    for (Pair<Integer, Boolean> item : assertStateStack) {
-      initialAsserts.add(item.getFirst());
-    }
-
-    for (int i : redstone.inputs()) {
-      if (!initialAsserts.contains(i)) {
-        assertStateStack.push(new Pair<>(i, false));
-      }
-    }
 
     while (!assertStateStack.isEmpty()) {
       Set<Integer> checkStateSet = new HashSet<>();
@@ -265,9 +289,13 @@ public class Circuit {
    * - torches which don't feed from input or to output
    */
   public Pair<Circuit, Map<Integer, Integer>> trimWithMapping() {
-    ArrayList<Integer> nodesToDelete = new ArrayList<>();
+    // All nodes remaining at the end should be both either affected by input or affect output.
     ArrayList<Edge<Integer>> nodesToMerge = new ArrayList<>();
-//    ArrayList<Edge> edgesToAdd = new ArrayList<Edge>();
+
+    // We want to start out by deleting all nodes which don't affect the output of the network at all
+    Set<Integer> nodesToDelete = new HashSet<>(redstone.nodes());
+    Set<Integer> affectsOutput = redstone.traceBackward(outputs);
+    nodesToDelete.removeAll(affectsOutput);
 
     for (int node = 0; node < redstone.size(); node++) {
       if (redstone.outNeighborhood(node).size() == 1 && redstone.inNeighborhood(node).size() == 1) {
@@ -281,35 +309,19 @@ public class Circuit {
       }
     }
 
-    // All nodes should be both either affected by input or affect output.
-    // The only exception are constant nodes,
-
-    HashSet<Integer> allNodes = new HashSet<>();
-    for (int i = 0; i < size(); i++) {
-      allNodes.add(i);
-    }
-
-    Set<Integer> affectedByInput = redstone.traceForward(inputs);
-    Set<Integer> affectsOutput = redstone.traceBackward(outputs);
-
-    Set<Integer> duallyAffected = new HashSet<>(affectedByInput);
-    duallyAffected.retainAll(affectsOutput);
-
-    Set<Integer> untouchedInputs = new HashSet<>(allNodes);
-    untouchedInputs.removeAll(duallyAffected);
-    untouchedInputs.retainAll(redstone.inputs());
-
+    /* Removal of constant nodes
+     *
+     * If only knowing this much asserts that a state is not UNKNOWN, then that state is a constant
+     * Ideally, we would have no constants at all
+     * If something is FALSE, then all its outputs are TRUE (and hence not UNKNOWN)
+     * TRUE items are useless, since they don't affect the output of anything they connect to.
+     * Hence, delete all marked items.
+     */
     Stack<Pair<Integer, Boolean>> assertStateStack = new Stack<>();
-    for (Integer i : untouchedInputs) {
+    for (Integer i : emptyInputs()) {
       assertStateStack.push(new Pair<>(i, false));
     }
-
-    // If only knowing this much asserts that a state is not UNKNOWN, then that state is a constant
-    // Ideally, we would have no constants at all
-    // If something is FALSE, then all its outputs are TRUE
-    // TRUE items are useless, since they don't affect the output of anything they connect to
-    // Hence, delete all marked items.
-    TriState[] constantState = simulateFull(assertStateStack);
+    TriState[] constantState = simulateRaw(assertStateStack);
     for (int node = 0; node < size(); node++) {
       switch (constantState[node]) {
         case UNKNOWN:
@@ -321,14 +333,17 @@ public class Circuit {
       }
     }
 
+    /*
+     * Compile node mappings from merges and deletes:
+     *   Change merging to node mapping
+     *   -1 represents deletion
+     */
     HashMap<Integer, Integer> nodeMapping = new HashMap<>();
-    // -1 represents deletion
     for (Integer node : nodesToDelete) {
       nodeMapping.put(node, -1);
     }
-
     for (Edge<Integer> nodePair : nodesToMerge) {
-      nodeMapping.put(nodePair.getStart(), nodePair.getEnd());
+      nodeMapping.put(getMapping(nodeMapping, nodePair.getStart()), nodePair.getEnd());
     }
 
     int newSize = size() - nodesToDelete.size() + nodesToMerge.size();
@@ -359,6 +374,8 @@ public class Circuit {
 
   /**
    * Follows cycles in {@code map}, starting from {@code val}, until an end point is reached.
+   * <p>
+   * O(1) amt
    */
   private static <V> V getMapping(Map<V, V> map, V val) {
     if (map.containsKey(val)) {
