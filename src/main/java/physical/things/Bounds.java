@@ -1,9 +1,6 @@
 package physical.things;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -15,7 +12,7 @@ import java.util.function.Function;
  * Merge: finds a region which contains all given points
  * Restrict: finds a region which all given ranges contain
  */
-public class Bounds implements Bounded {
+public class Bounds implements Bounded, Iterable<Point3D> {
   private Point3D lo;
   private Point3D hi;
 
@@ -57,6 +54,43 @@ public class Bounds implements Bounded {
         randInt(lo.getY(), hi.getY() + 1),
         randInt(lo.getZ(), hi.getZ() + 1)
     );
+  }
+
+  /**
+   * @return An iterator over all points contained inside these bounds.
+   */
+  public Iterator<Point3D> iterator() {
+    return new InteriorIterator();
+  }
+
+  private class InteriorIterator implements Iterator<Point3D> {
+    private int x, y, z;
+
+    InteriorIterator() {
+      x = lo.getX();
+      y = lo.getY();
+      z = lo.getZ();
+    }
+
+    @Override
+    public boolean hasNext() {
+      return z <= hi.getZ();
+    }
+
+    @Override
+    public Point3D next() {
+      Point3D r = new Point3D(x, y, z);
+      x++;
+      if (x > hi.getX()) {
+        x = lo.getX();
+        y++;
+        if (y > hi.getY()) {
+          y = lo.getY();
+          z++;
+        }
+      }
+      return r;
+    }
   }
 
   public static Bounds make(Point3D p) {
