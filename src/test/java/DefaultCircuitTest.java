@@ -36,6 +36,24 @@ public class DefaultCircuitTest {
 
     CircuitTestCollection[] ctcs = new CircuitTestCollection[]{
         new CircuitTestCollection(cc4, new CircuitTest[]{
+            new CircuitTest("not", "0", "1"),
+            new CircuitTest("not", "1", "0"),
+
+            new CircuitTest("and", "00", "0"),
+            new CircuitTest("and", "10", "0"),
+            new CircuitTest("and", "01", "0"),
+            new CircuitTest("and", "11", "1"),
+
+            new CircuitTest("or", "00", "0"),
+            new CircuitTest("or", "10", "1"),
+            new CircuitTest("or", "01", "1"),
+            new CircuitTest("or", "11", "1"),
+
+            new CircuitTest("xor", "00", "0"),
+            new CircuitTest("xor", "10", "1"),
+            new CircuitTest("xor", "01", "1"),
+            new CircuitTest("xor", "11", "0"),
+
             new CircuitTest("atLeast2", "000", "0"),
             new CircuitTest("atLeast2", "100", "0"),
             new CircuitTest("atLeast2", "010", "0"),
@@ -53,24 +71,6 @@ public class DefaultCircuitTest {
             new CircuitTest("xor3", "101", "0"),
             new CircuitTest("xor3", "011", "0"),
             new CircuitTest("xor3", "111", "1"),
-
-            new CircuitTest("xor", "00", "0"),
-            new CircuitTest("xor", "10", "1"),
-            new CircuitTest("xor", "01", "1"),
-            new CircuitTest("xor", "11", "0"),
-
-            new CircuitTest("and", "00", "0"),
-            new CircuitTest("and", "10", "0"),
-            new CircuitTest("and", "01", "0"),
-            new CircuitTest("and", "11", "1"),
-
-            new CircuitTest("or", "00", "0"),
-            new CircuitTest("or", "10", "1"),
-            new CircuitTest("or", "01", "1"),
-            new CircuitTest("or", "11", "1"),
-
-            new CircuitTest("not", "0", "1"),
-            new CircuitTest("not", "1", "0"),
 
             new CircuitTest("any4", "0000", "0"),
             new CircuitTest("any4", "1000", "1"),
@@ -170,6 +170,11 @@ public class DefaultCircuitTest {
           runCircuitTest(test.getCircuit(), test.input, test.expectedOutput);
         } catch (Exception e) {
           throw new RuntimeException("On test " + test.toString(), e);
+        }
+        try {
+          runCircuitTest(test.getCircuit().trim(), test.input, test.expectedOutput);
+        } catch (Exception e) {
+          throw new RuntimeException("On trimmed test " + test.toString(), e);
         }
       }
     }
