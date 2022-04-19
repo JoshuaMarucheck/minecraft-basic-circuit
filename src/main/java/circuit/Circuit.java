@@ -283,31 +283,36 @@ public class Circuit {
    * <p>
    * Removes extraneous features from the circuit.
    * Specifically, it looks for:
-   * - two redstone torches in a row (that don't connect input and output,
+   * - TODO: two redstone torches in a row (that don't connect input and output,
    * just to keep inputs distinct from each other and outputs distinct from each other)
    * - TODO: doesn't do this perfectly, since it doesn't check for it after the next item
    * - torches which don't feed from input or to output
+   * <p>
+   * Keeps all inputs and outputs.
+   * <p>
+   * Returns:
+   * - A Circuit which is functionally equivalent to this one.
+   * - A mapping of node ids from the original circuit to the new one. (-1 represents node deletion)
    */
-  public Pair<Circuit, Map<Integer, Integer>> trimWithMapping() {
+  public Pair<Circuit, int[]> trimWithMapping() {
     // All nodes remaining at the end should be both either affected by input or affect output.
-    ArrayList<Edge<Integer>> nodesToMerge = new ArrayList<>();
-
     // We want to start out by deleting all nodes which don't affect the output of the network at all
     Set<Integer> nodesToDelete = new HashSet<>(redstone.nodes());
     Set<Integer> affectsOutput = redstone.traceBackward(outputs);
     nodesToDelete.removeAll(affectsOutput);
 
-    for (int node = 0; node < redstone.size(); node++) {
-      if (redstone.outNeighborhood(node).size() == 1 && redstone.inNeighborhood(node).size() == 1) {
-        Integer inputNode = unit(redstone.inNeighborhood(node));
-        Integer outputNode = unit(redstone.outNeighborhood(node));
-
-        if (!(contains(outputs, outputNode) && contains(inputs, inputNode))) {
-          nodesToMerge.add(new Edge<>(inputNode, outputNode));
-          nodesToDelete.add(node);
-        }
-      }
-    }
+//    ArrayList<Edge<Integer>> nodesToMerge = new ArrayList<>();
+//    for (int node = 0; node < redstone.size(); node++) {
+//      if (redstone.outNeighborhood(node).size() == 1 && redstone.inNeighborhood(node).size() == 1) {
+//        Integer inputNode = unit(redstone.inNeighborhood(node));
+//        Integer outputNode = unit(redstone.outNeighborhood(node));
+//
+//        if (!(contains(outputs, outputNode) && contains(inputs, inputNode))) {
+//          nodesToMerge.add(new Edge<>(inputNode, outputNode));
+//          nodesToDelete.add(node);
+//        }
+//      }
+//    }
 
     /* Removal of constant nodes
      *
@@ -333,40 +338,90 @@ public class Circuit {
       }
     }
 
+    // Just on principle, we can't delete any inputs or outputs (even the constant outputs or the useless inputs)
+    nodesToDelete.removeAll(Arrays.asList(inputs));
+    for (int output : outputs) {
+      nodesToDelete.remove(output);
+      if (constantState[output] == TRUE) {
+        // All constant outputs must maintain their constant value
+        // FALSE constants are fine without input, but TRUE constants need a FALSE input
+        boolean trueConstant = false;
+        for (int preceedOutputNode : redstone.inNeighborhood(output)) {
+          if (constantState[preceedOutputNode] == FALSE) {
+            nodesToDelete.remove(preceedOutputNode);
+            trueConstant = true;
+            break;
+          }
+        }
+        if (!trueConstant) {
+          throw new IllegalStateException("TRUE output without FALSE input");
+        }
+      }
+    }
+
+
+    int newSize = size() - nodesToDelete.size();// + nodesToMerge.size();
+    SimpleCircuitBuilder scb = new SimpleCircuitBuilder();
+    scb.ensureSize(newSize);
+    int[] compressMap = new int[size()];
+    int runningId = 0;
+    for (int i = 0; i < size(); i++) {
+      if (nodesToDelete.contains(i)) {
+        compressMap[i] = -1;
+      } else {
+        compressMap[i] = runningId++;
+      }
+    }
+
     /*
      * Compile node mappings from merges and deletes:
      *   Change merging to node mapping
      *   -1 represents deletion
+     *
+     * Note this represents a mapping over the old node ids.
+     * Node ids need to be compressed to the new size, which will
+     * be done in nodeMapping.
      */
-    HashMap<Integer, Integer> nodeMapping = new HashMap<>();
+    HashMap<Integer, Integer> nodeMappingBase = new HashMap<>();
     for (Integer node : nodesToDelete) {
-      nodeMapping.put(node, -1);
+      nodeMappingBase.put(node, -1);
     }
-    for (Edge<Integer> nodePair : nodesToMerge) {
-      nodeMapping.put(getMapping(nodeMapping, nodePair.getStart()), nodePair.getEnd());
+//    for (Edge<Integer> nodePair : nodesToMerge) {
+//      Integer start = getMapping(nodeMappingBase, nodePair.getStart());
+//      Integer end = getMapping(nodeMappingBase, nodePair.getEnd());
+//      if (!start.equals(end)) {
+//        nodeMappingBase.put(getMapping(nodeMappingBase, nodePair.getStart()), nodePair.getEnd());
+//      } else {
+//        System.out.println("hi");
+//      }
+//    }
+    /*
+     * Now add compression to the new circuit size.
+     * TODO: I'm not really sure that this works for node merging...
+     */
+    int[] nodeMapping = new int[size()];
+    for (int node = 0; node < size(); node++) {
+      int baseMapping = getMapping(nodeMappingBase, node);
+      nodeMapping[node] = baseMapping == -1 ? -1 : compressMap[baseMapping];
     }
-
-    int newSize = size() - nodesToDelete.size() + nodesToMerge.size();
-    SimpleCircuitBuilder scb = new SimpleCircuitBuilder();
-    scb.ensureSize(newSize);
 
     Iterator<Edge<Integer>> edges = redstone.getEdges();
     while (edges.hasNext()) {
       Edge<Integer> edge = edges.next();
 
-      int start = getMapping(nodeMapping, edge.getStart());
-      int end = getMapping(nodeMapping, edge.getEnd());
+      int start = nodeMapping[edge.getStart()];
+      int end = nodeMapping[edge.getEnd()];
 
-      if (start != -1 && end != -1) {
+      if (start != -1 && end != -1 && start != end) {
         scb.addEdge(start, end);
       }
     }
 
     for (int i : inputs) {
-      scb.registerInput(getMapping(nodeMapping, i));
+      scb.registerInput(nodeMapping[i]);
     }
     for (int i : outputs) {
-      scb.registerOutput(getMapping(nodeMapping, i));
+      scb.registerOutput(nodeMapping[i]);
     }
 
     return new Pair<>(scb.toCircuit(), nodeMapping);
@@ -391,6 +446,14 @@ public class Circuit {
       }
     }
     return val;
+  }
+
+  private static <V> V mapOrDefault(Map<V, V> map, V val) {
+    return map.getOrDefault(val, val);
+  }
+
+  private static int mapCompressInt(Map<Integer, Integer> map, int[] compressMap, Integer val) {
+    return map.getOrDefault(val, compressMap[val]);
   }
 
   private static boolean contains(Integer[] arr, int x) {
