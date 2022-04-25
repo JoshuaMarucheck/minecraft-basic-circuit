@@ -35,17 +35,26 @@ public class TwoWayDirectedGraph<T> {
    * @return a Set view of the nodes in this graph
    */
   public Set<T> nodes() {
-    return forward.nodes();
+    return new SetView<>(forward.nodes());
   }
 
+  /**
+   * Returns a view of the in neighborhood of this node.
+   */
   public Set<T> outNeighborhood(T node) {
-    return forward.outNeighborhood(node);
+    return new SetView<>(forward.outNeighborhood(node));
   }
 
+  /**
+   * Returns a view of the in neighborhood of this node.
+   */
   public Set<T> inNeighborhood(T node) {
-    return backward.outNeighborhood(node);
+    return new SetView<>(backward.outNeighborhood(node));
   }
 
+  /**
+   * @return The number of nodes in this graph
+   */
   public int size() {
     return forward.size();
   }
@@ -75,9 +84,8 @@ public class TwoWayDirectedGraph<T> {
   /**
    * Computes the distance from the given node to each other node.
    * Follows forward and backward links.
-   *
+   * <p>
    * Doesn't compute distances greater than or equal to maxDist. (Make it {@code null} to compute all distances.)
-   *
    */
   public Map<T, Integer> distanceMap(T start, Integer maxDist) {
     HashMap<T, Integer> r = new HashMap<>();
