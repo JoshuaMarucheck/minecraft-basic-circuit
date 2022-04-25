@@ -1,7 +1,6 @@
 package physical2.tiny;
 
 import graph.Edge;
-import graph.TwoWayDirectedGraph;
 import physical2.two.Point2D;
 
 import java.util.*;
@@ -14,18 +13,14 @@ import java.util.*;
  * @param <T> graph element type
  */
 public class VariableSignalPosMap<T> {
-  private TwoWayDirectedGraph<T> redstone;
   private Map<T, Point2D> posMap;
   private Set<Point2D> consumedPoints;
   private Iterator<Point2D> legalPositions;
 
   /**
-   *
-   * @param redstone
    * @param legalPositions An infinite iterable
    */
-  public VariableSignalPosMap(TwoWayDirectedGraph<T> redstone, Iterable<Point2D> legalPositions) {
-    this.redstone = redstone;
+  public VariableSignalPosMap(Iterable<Point2D> legalPositions) {
     this.posMap = new HashMap<>();
     this.legalPositions = legalPositions.iterator();
     this.consumedPoints = new HashSet<>();

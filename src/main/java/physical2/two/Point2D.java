@@ -47,4 +47,9 @@ public class Point2D {
     }
     return false;
   }
+
+  @Override
+  public int hashCode() {
+    return x * 31 + y * 37;
+  }
 }

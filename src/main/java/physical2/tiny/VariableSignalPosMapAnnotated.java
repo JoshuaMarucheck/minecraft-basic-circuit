@@ -10,8 +10,8 @@ import java.util.Iterator;
 public class VariableSignalPosMapAnnotated extends VariableSignalPosMap<Integer> {
   protected AnnotatedCircuit circuit;
 
-  private VariableSignalPosMapAnnotated(TwoWayDirectedGraph<Integer> redstone, Iterable<Point2D> legalPositions) {
-    super(redstone, legalPositions);
+  private VariableSignalPosMapAnnotated(Iterable<Point2D> legalPositions) {
+    super(legalPositions);
   }
 
   public static VariableSignalPosMapAnnotated makeWithDebug(DebugCircuit circuit, Iterable<Point2D> legalPositions) {
@@ -21,7 +21,7 @@ public class VariableSignalPosMapAnnotated extends VariableSignalPosMap<Integer>
   }
 
   public static VariableSignalPosMapAnnotated makeWithAnnotations(AnnotatedCircuit circuit, Iterable<Point2D> legalPositions) {
-    VariableSignalPosMapAnnotated r = new VariableSignalPosMapAnnotated(circuit.getGraph(), legalPositions);
+    VariableSignalPosMapAnnotated r = new VariableSignalPosMapAnnotated(legalPositions);
     r.circuit = circuit;
     return r;
   }
