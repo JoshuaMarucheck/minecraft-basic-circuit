@@ -17,13 +17,14 @@ import java.util.Map;
 
 public class PathDrawer<T> implements Bounded {
   private VariableSignalPosMap<T> varPosMap;
-  private Map<Integer, Map<Point2D, Pair<Side, Side>>> paths;
+  private Map<Integer, Map<Point2D, SquareSpecifier>> paths;
 
   public PathDrawer(VariableSignalPosMap<T> varPosMap) {
     this.varPosMap = varPosMap;
+    paths = new HashMap<>();
   }
 
-  public Map<Integer, Map<Point2D, Pair<Side, Side>>> getPaths() {
+  public Map<Integer, Map<Point2D, SquareSpecifier>> getPaths() {
     return paths;
   }
 
@@ -48,9 +49,9 @@ public class PathDrawer<T> implements Bounded {
       return false;
     }
 
-    Map<Point2D, Pair<Side, Side>> layer = paths.get(z);
+    Map<Point2D, SquareSpecifier> layer = paths.get(z);
 
-    for (Pair<Point2D, Pair<Side, Side>> pair : path) {
+    for (Pair<Point2D, SquareSpecifier> pair : path) {
       Point2D point = pair.getFirst();
 
       if (layer.containsKey(point)) {
@@ -61,14 +62,14 @@ public class PathDrawer<T> implements Bounded {
   }
 
   private void addPathUnsafe(Integer z, BentPath path) {
-    Map<Point2D, Pair<Side, Side>> layer = ensureLayer(z);
+    Map<Point2D, SquareSpecifier> layer = ensureLayer(z);
 
-    for (Pair<Point2D, Pair<Side, Side>> pair : path) {
+    for (Pair<Point2D, SquareSpecifier> pair : path) {
       layer.put(pair.getFirst(), pair.getSecond());
     }
   }
 
-  private Map<Point2D, Pair<Side, Side>> ensureLayer(Integer z) {
+  private Map<Point2D, SquareSpecifier> ensureLayer(Integer z) {
     if (!paths.containsKey(z)) {
       paths.put(z, new HashMap<>());
     }
@@ -81,7 +82,7 @@ public class PathDrawer<T> implements Bounded {
     Bounds b = null;
 
     for (int z : paths.keySet()) {
-      Map<Point2D, Pair<Side, Side>> layer = paths.get(z);
+      Map<Point2D, SquareSpecifier> layer = paths.get(z);
 
       for (Point2D p : layer.keySet()) {
         b = Bounds.merge(b, new Point3D(p.getX(), p.getY(), z));

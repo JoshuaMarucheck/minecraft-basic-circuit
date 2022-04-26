@@ -14,11 +14,11 @@ public class BlockDrawer {
     this.drawer = drawer;
     blocks = new AbsolutePhysical3DMap2(drawer.bounds());
 
-    Map<Integer, Map<Point2D, Pair<Side, Side>>> paths = drawer.getPaths();
+    Map<Integer, Map<Point2D, SquareSpecifier>> paths = drawer.getPaths();
     for (Integer z : paths.keySet()) {
-      Map<Point2D, Pair<Side, Side>> layer = paths.get(z);
+      Map<Point2D, SquareSpecifier> layer = paths.get(z);
       for (Point2D p : layer.keySet()) {
-        Pair<Side, Side> sides = layer.get(p);
+        SquareSpecifier sides = layer.get(p);
         blocks.putPlate(z, p, sides);
       }
     }

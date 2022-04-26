@@ -13,12 +13,11 @@ import java.util.function.Function;
 
 public class AbsolutePhysical3DMap2 {
   private BlockConstant[][][] blocks;
-//  private Function<Point2D, Point2D> scale2;
   private Function<Point3D, Point3D> scale3;
 
   public AbsolutePhysical3DMap2(Bounds b) {
     Offset offset = new Offset(b.getLower().negate());
-//    scale2 = p -> new Point2D(5 * p.getX(), 5 * p.getY());
+
     scale3 = offset.compose(p -> new Point3D(5 * p.getX(), 5 * p.getY(), mapZ(p.getZ())));
 
     Point3D offsetUpper = scale3.apply(b.getUpper());
@@ -38,8 +37,8 @@ public class AbsolutePhysical3DMap2 {
   /**
    * In tiny coords
    */
-  public void putPlate(int z, Point2D localPos, Pair<Side, Side> sides) {
-    Map<Point2D, BlockConstant> square = SideMapping.get(sides);
+  public void putPlate(int z, Point2D localPos, SquareSpecifier spec) {
+    Map<Point2D, BlockConstant> square = SideMapping.get(spec);
     for (Point2D p : square.keySet()) {
       putBlock(to3D(p.add(localPos), z), square.get(p));
     }

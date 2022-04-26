@@ -1,6 +1,7 @@
 package physical2.tiny;
 
 import circuit.Pair;
+import physical2.blocks.SquareSpecifier;
 import physical2.two.Point2D;
 import physical2.two.Side;
 
@@ -11,7 +12,7 @@ import java.util.Set;
 import static physical2.two.Side.DOWN;
 
 
-public class BentPath implements Iterable<Pair<Point2D, Pair<Side, Side>>> {
+public class BentPath implements Iterable<Pair<Point2D, SquareSpecifier>> {
   /**
    * Points representing the positions of redstone goals.
    */
@@ -24,8 +25,8 @@ public class BentPath implements Iterable<Pair<Point2D, Pair<Side, Side>>> {
   }
 
   @Override
-  public Iterator<Pair<Point2D, Pair<Side, Side>>> iterator() {
-    return new BentIterator();
+  public Iterator<Pair<Point2D, SquareSpecifier>> iterator() {
+    return new RepeaterInserter();
   }
 
   /**
@@ -41,12 +42,33 @@ public class BentPath implements Iterable<Pair<Point2D, Pair<Side, Side>>> {
   public Set<Point2D> consumedSpace() {
     Set<Point2D> points = new HashSet<>();
 
-    for (Pair<Point2D, Pair<Side, Side>> pair : this) {
+    for (Pair<Point2D, SquareSpecifier> pair : this) {
       Point2D p = pair.getFirst();
       points.add(p);
     }
 
     return points;
+  }
+
+  private class RepeaterInserter implements Iterator<Pair<Point2D, SquareSpecifier>> {
+    private BentIterator iter;
+
+    RepeaterInserter() {
+      iter = new BentIterator();
+    }
+
+    @Override
+    public boolean hasNext() {
+      return iter.hasNext();
+    }
+
+    @Override
+    public Pair<Point2D, SquareSpecifier> next() {
+      Pair<Point2D, Pair<Side, Side>> pair = iter.next();
+      Pair<Side, Side> sides = pair.getSecond();
+      SquareSpecifier spec = new SquareSpecifier(sides.getFirst(), sides.getSecond(), true);
+      return new Pair<>(pair.getFirst(), spec);
+    }
   }
 
   /**

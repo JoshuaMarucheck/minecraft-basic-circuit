@@ -12,10 +12,10 @@ import java.util.Map;
  */
 
 public class SideMapping {
-  private static Map<Pair<Side, Side>, Map<Point2D, BlockConstant>> mappings;
+  private static Map<SquareSpecifier, Map<Point2D, BlockConstant>> mappings;
 
-  public static Map<Point2D, BlockConstant> get(Pair<Side, Side> sides) {
-    return mappings.get(sides);
+  public static Map<Point2D, BlockConstant> get(SquareSpecifier spec) {
+    return mappings.get(spec);
   }
 
 
