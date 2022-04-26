@@ -89,4 +89,8 @@ public class AbsolutePhysical3DMap2 {
   public BlockConstant[][][] getBlocks() {
     return blocks;
   }
+
+  public int maxZ() {
+    return blocks[0][0].length - 1;
+  }
 }

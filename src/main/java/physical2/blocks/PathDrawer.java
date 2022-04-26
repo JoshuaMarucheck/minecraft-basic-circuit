@@ -27,6 +27,10 @@ public class PathDrawer<T> implements Bounded {
     zRange = new HashMap<>();
   }
 
+  public VariableSignalPosMap<T> getVarPosMap() {
+    return varPosMap;
+  }
+
   public Map<Integer, Map<Point2D, SquareSpecifier>> getPaths() {
     return paths;
   }

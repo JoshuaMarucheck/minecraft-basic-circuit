@@ -2,7 +2,8 @@ package physical2.tiny;
 
 import circuit.AnnotatedCircuit;
 import circuit.DebugCircuit;
-import graph.TwoWayDirectedGraph;
+import misc.FuncMapIterator;
+import misc.IteratorConcatenator;
 import physical2.two.Point2D;
 
 import java.util.Iterator;
@@ -10,20 +11,47 @@ import java.util.Iterator;
 public class VariableSignalPosMapAnnotated extends VariableSignalPosMap<Integer> {
   protected AnnotatedCircuit circuit;
 
-  private VariableSignalPosMapAnnotated(Iterable<Point2D> legalPositions) {
+  public VariableSignalPosMapAnnotated(AnnotatedCircuit circuit, Iterable<Point2D> legalPositions) {
     super(legalPositions);
+    this.circuit = circuit;
   }
 
   public static VariableSignalPosMapAnnotated makeWithDebug(DebugCircuit circuit, Iterable<Point2D> legalPositions) {
-    VariableSignalPosMapAnnotated r = makeWithAnnotations(circuit, legalPositions);
+    VariableSignalPosMapAnnotated r = new VariableSignalPosMapAnnotated(circuit, legalPositions);
     // TODO: Add labelling
     return r;
   }
 
-  public static VariableSignalPosMapAnnotated makeWithAnnotations(AnnotatedCircuit circuit, Iterable<Point2D> legalPositions) {
-    VariableSignalPosMapAnnotated r = new VariableSignalPosMapAnnotated(legalPositions);
-    r.circuit = circuit;
-    return r;
+  public Iterator<Point2D> inputPosIterator() {
+    return new FuncMapIterator<>(this::getPos, new IteratorConcatenator<>(new Iterator<Iterator<Integer>>() {
+      private int i = 0;
+
+      @Override
+      public boolean hasNext() {
+        return i < circuit.getMultibitInputCount();
+      }
+
+      @Override
+      public Iterator<Integer> next() {
+        return circuit.getMultibitInput(i++);
+      }
+    }));
+  }
+
+  public Iterator<Point2D> outputPosIterator() {
+    return new FuncMapIterator<>(this::getPos, new IteratorConcatenator<>(new Iterator<Iterator<Integer>>() {
+      private int i = 0;
+
+      @Override
+      public boolean hasNext() {
+        return i < circuit.getMultibitInputCount();
+      }
+
+      @Override
+      public Iterator<Integer> next() {
+        return circuit.getMultibitInput(i++);
+      }
+    }));
   }
 
   public void placeInput(int inputId, Iterator<Point2D> positions) {

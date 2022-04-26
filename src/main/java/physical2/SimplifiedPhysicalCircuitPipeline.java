@@ -26,7 +26,7 @@ public class SimplifiedPhysicalCircuitPipeline {
   }
 
   public static void circuitToSchematic(AnnotatedCircuit circuit, File outFile) throws IOException {
-    VariableSignalPosMapAnnotated sigPosMap = VariableSignalPosMapAnnotated.makeWithAnnotations(circuit, new DefaultLegalPositions());
+    VariableSignalPosMapAnnotated sigPosMap = new VariableSignalPosMapAnnotated(circuit, new DefaultLegalPositions());
 
     for (int i = 0; i < circuit.getMultibitInputCount(); i++) {
       sigPosMap.placeInput(i, new XIter(0, i));
