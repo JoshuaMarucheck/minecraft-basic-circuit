@@ -78,4 +78,9 @@ public class Range implements Iterable<Integer> {
       return i++;
     }
   }
+
+  @Override
+  public String toString() {
+    return "Range(" + lo + ", " + hi + ")";
+  }
 }

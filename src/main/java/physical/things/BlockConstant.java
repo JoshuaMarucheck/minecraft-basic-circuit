@@ -6,7 +6,8 @@ package physical.things;
  * EMPTY represents not assigning a block yet, as opposed to AIR, which must be empty for the redstone to work.
  */
 public enum BlockConstant {
-  EMPTY, AIR, REDSTONE_BASE, REDSTONE, REDSTONE_TORCH_BASE, REDSTONE_TORCH;
+  EMPTY, AIR, REDSTONE_BASE, REDSTONE, REDSTONE_TORCH_BASE, REDSTONE_TORCH,
+  REPEATER_X,REPEATER_Y,REPEATER_Z,REPEATER_X_,REPEATER_Y_,REPEATER_Z_;
 
   int toCanonicalBlockId(BlockConstant c) {
     switch (c) {

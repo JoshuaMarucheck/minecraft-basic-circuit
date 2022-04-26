@@ -20,7 +20,7 @@ public class OrderedEdgeIterable<T> implements Iterable<Edge<T>> {
   }
 
   /**
-   * ITerates over edges in the graph, maintaining the invariant that if edge A has a path forward in the graph to edge B, then B is yielded before A.
+   * Iterates over edges in the graph, maintaining the invariant that if edge A has a path forward in the graph to edge B, then B is yielded before A.
    * The behavior is undefined in the case that the graph contains a loop.
    *
    * @param <T> the graph node type
@@ -47,13 +47,14 @@ public class OrderedEdgeIterable<T> implements Iterable<Edge<T>> {
       Stack<Edge<T>> handleStack = new Stack<>();
       handleStack.add(graphIter.next());
       Queue<Edge<T>> iterQueue = new LinkedList<>();
+      Set<Edge<T>> locallyHandled = new HashSet<>();
 
       while (!handleStack.isEmpty()) {
         Edge<T> edge = handleStack.pop();
-        if (handled.contains(edge)) {
+        if (locallyHandled.contains(edge)) {
           iterQueue.add(edge);
-        } else {
-          handled.add(edge);
+        } else if (!handled.contains(edge)) {
+          locallyHandled.add(edge);
           handleStack.push(edge);
           for (T node : graph.inNeighborhood(edge.getStart())) {
             handleStack.push(new Edge<>(node, edge.getStart()));
@@ -61,6 +62,7 @@ public class OrderedEdgeIterable<T> implements Iterable<Edge<T>> {
         }
       }
 
+      handled.addAll(locallyHandled);
       localIter = iterQueue.iterator();
     }
 
