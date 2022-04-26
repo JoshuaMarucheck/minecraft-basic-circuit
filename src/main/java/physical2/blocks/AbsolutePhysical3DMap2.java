@@ -1,12 +1,10 @@
 package physical2.blocks;
 
-import circuit.Pair;
 import physical.things.BlockConstant;
 import physical.things.Bounds;
 import physical.things.Point3D;
 import physical.transforms.Offset;
 import physical2.two.Point2D;
-import physical2.two.Side;
 
 import java.util.Map;
 import java.util.function.Function;
@@ -24,7 +22,7 @@ public class AbsolutePhysical3DMap2 {
     blocks = new BlockConstant[offsetUpper.getX()][offsetUpper.getY()][offsetUpper.getZ()];
   }
 
-  private int mapZ(int z){
+  private int mapZ(int z) {
     z = z * 2;
     z += z / 15;
     return z;

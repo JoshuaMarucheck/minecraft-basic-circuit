@@ -10,7 +10,6 @@ import physical.things.Point3D;
 import physical2.tiny.BentPath;
 import physical2.tiny.VariableSignalPosMap;
 import physical2.two.Point2D;
-import physical2.two.Side;
 
 import java.util.HashMap;
 import java.util.Map;

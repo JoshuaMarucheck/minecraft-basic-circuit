@@ -1,9 +1,7 @@
 package physical2.blocks;
 
-import circuit.Pair;
 import physical.things.BlockConstant;
 import physical2.two.Point2D;
-import physical2.two.Side;
 
 import java.util.Map;
 

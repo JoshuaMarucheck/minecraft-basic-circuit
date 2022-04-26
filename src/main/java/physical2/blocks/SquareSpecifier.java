@@ -31,4 +31,9 @@ public class SquareSpecifier {
     }
     return false;
   }
+
+  @Override
+  public int hashCode() {
+    return s1.hashCode() + 10 * s2.hashCode() + (repeater ? 37 : 0);
+  }
 }
