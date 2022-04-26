@@ -5,7 +5,7 @@ import circuit.preconstructed.CircuitCollection;
 import dev.dewy.nbt.tags.collection.CompoundTag;
 import nbt.NBTMaker;
 import physical2.blocks.BlockDrawer;
-import physical2.blocks.PathDrawer;
+import physical2.blocks.PathAccumulator;
 import physical2.tiny.DefaultLegalPositions;
 import physical2.tiny.VariableSignalPosMapAnnotated;
 import physical2.tiny.XIter;
@@ -35,8 +35,8 @@ public class SimplifiedPhysicalCircuitPipeline {
       sigPosMap.placeOutput(i, new XIter(0, i + circuit.getMultibitInputCount()));
     }
 
-    PathDrawer pathDrawer = PathDrawer.makeLinear(sigPosMap, circuit.getGraph());
-    BlockDrawer blockDrawer = new BlockDrawer(pathDrawer);
+    PathAccumulator pathAccumulator = PathAccumulator.makeLinear(sigPosMap, circuit.getGraph());
+    BlockDrawer blockDrawer = new BlockDrawer(pathAccumulator);
     CompoundTag tag = NBTMaker.toNbt(blockDrawer.getBlocks());
     NBT.toFile(tag, outFile);
   }

@@ -12,26 +12,26 @@ import physical2.tiny.BentPath;
 import physical2.tiny.VariableSignalPosMap;
 import physical2.two.Point2D;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
-public class PathDrawer<T> implements Bounded {
+public class PathAccumulator<T> implements Bounded {
   private VariableSignalPosMap<T> varPosMap;
-  private Map<Integer, Map<Point2D, SquareSpecifier>> paths;
+  private Map<Integer, Set<Point2D>> consumedPoints;
+  private Map<Integer, Collection<BentPath>> paths;
   private Map<Point2D, Pair<Range, Range>> zRange;
 
-  public PathDrawer(VariableSignalPosMap<T> varPosMap) {
+  public PathAccumulator(VariableSignalPosMap<T> varPosMap) {
     this.varPosMap = varPosMap;
     paths = new HashMap<>();
     zRange = new HashMap<>();
+    consumedPoints = new HashMap<>();
   }
 
   public VariableSignalPosMap<T> getVarPosMap() {
     return varPosMap;
   }
 
-  public Map<Integer, Map<Point2D, SquareSpecifier>> getPaths() {
+  public Map<Integer, Collection<BentPath>> getPaths() {
     return paths;
   }
 
@@ -44,8 +44,8 @@ public class PathDrawer<T> implements Bounded {
     return Range.merge(pair.getFirst(), pair.getSecond());
   }
 
-  public static <T> PathDrawer<T> makeLinear(VariableSignalPosMap<T> varPosMap, TwoWayDirectedGraph<T> graph) {
-    PathDrawer<T> r = new PathDrawer<>(varPosMap);
+  public static <T> PathAccumulator<T> makeLinear(VariableSignalPosMap<T> varPosMap, TwoWayDirectedGraph<T> graph) {
+    PathAccumulator<T> r = new PathAccumulator<>(varPosMap);
     r.placeAllLinear(graph);
     return r;
   }
@@ -65,12 +65,12 @@ public class PathDrawer<T> implements Bounded {
       return false;
     }
 
-    Map<Point2D, SquareSpecifier> layer = paths.get(z);
+    Set<Point2D> layer = consumedPoints.get(z);
 
     for (Pair<Point2D, SquareSpecifier> pair : path) {
       Point2D point = pair.getFirst();
 
-      if (layer.containsKey(point)) {
+      if (layer.contains(point)) {
         return true;
       }
     }
@@ -86,10 +86,10 @@ public class PathDrawer<T> implements Bounded {
     registerOutputZ(z, path.getStart());
 
     // Add blocks
-    Map<Point2D, SquareSpecifier> layer = ensureLayer(z);
+    Set<Point2D> layer = ensureConsumed(z);
 
     for (Pair<Point2D, SquareSpecifier> pair : path) {
-      layer.put(pair.getFirst(), pair.getSecond());
+      layer.add(pair.getFirst());
     }
   }
 
@@ -125,11 +125,18 @@ public class PathDrawer<T> implements Bounded {
     }
   }
 
-  private Map<Point2D, SquareSpecifier> ensureLayer(Integer z) {
+  private Collection<BentPath> ensureLayer(Integer z) {
     if (!paths.containsKey(z)) {
-      paths.put(z, new HashMap<>());
+      paths.put(z, new HashSet<>());
     }
     return paths.get(z);
+  }
+
+  private Set<Point2D> ensureConsumed(Integer z) {
+    if (!consumedPoints.containsKey(z)) {
+      consumedPoints.put(z, new HashSet<>());
+    }
+    return consumedPoints.get(z);
   }
 
 
@@ -138,9 +145,9 @@ public class PathDrawer<T> implements Bounded {
     Bounds b = null;
 
     for (int z : paths.keySet()) {
-      Map<Point2D, SquareSpecifier> layer = paths.get(z);
+      Set<Point2D> layer = consumedPoints.get(z);
 
-      for (Point2D p : layer.keySet()) {
+      for (Point2D p : layer) {
         b = Bounds.merge(b, new Point3D(p.getX(), p.getY(), z));
       }
     }

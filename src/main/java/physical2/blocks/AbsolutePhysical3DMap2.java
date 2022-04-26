@@ -1,14 +1,21 @@
 package physical2.blocks;
 
+import circuit.Pair;
+import misc.PairSecondIterator;
 import physical.things.BlockConstant;
 import physical.things.Bounds;
 import physical.things.Point3D;
 import physical.transforms.Offset;
 import physical2.one.Range;
+import physical2.tiny.BentPath;
 import physical2.two.Point2D;
 
+import java.util.Iterator;
 import java.util.Map;
 import java.util.function.Function;
+
+import static physical2.blocks.SideMapping.X_SCALE;
+import static physical2.blocks.SideMapping.Y_SCALE;
 
 public class AbsolutePhysical3DMap2 {
   private BlockConstant[][][] blocks;
@@ -17,7 +24,7 @@ public class AbsolutePhysical3DMap2 {
   public AbsolutePhysical3DMap2(Bounds b) {
     Offset offset = new Offset(b.getLower().negate());
 
-    scale3 = offset.compose(p -> new Point3D(5 * p.getX(), 5 * p.getY(), mapZ(p.getZ())));
+    scale3 = offset.compose(p -> new Point3D(X_SCALE * p.getX(), Y_SCALE * p.getY(), mapZ(p.getZ())));
 
     Point3D offsetUpper = scale3.apply(b.getUpper());
     blocks = new BlockConstant[offsetUpper.getX()][offsetUpper.getY()][offsetUpper.getZ()];
@@ -55,13 +62,18 @@ public class AbsolutePhysical3DMap2 {
     return r;
   }
 
-  /**
-   * In tiny coords
-   */
-  public void putPlate(int z, Point2D localPos, SquareSpecifier spec) {
-    Map<Point2D, BlockConstant> square = SideMapping.get(spec);
-    for (Point2D p : square.keySet()) {
-      putBlock(to3D(p.add(localPos), z), square.get(p));
+    /**
+     * In tiny coords
+     */
+  public void putPath(Integer z, BentPath bp) {
+    Iterator<Pair<Point2D, Map<Point2D, BlockConstant>>> squares = new PairSecondIterator<>(bp.iterator(), SideMapping::iterateOverPath);
+    for (; squares.hasNext(); ) {
+      Pair<Point2D, Map<Point2D, BlockConstant>> pair = squares.next();
+      Point2D p = pair.getFirst();
+      Map<Point2D, BlockConstant> square = pair.getSecond();
+      for (Point2D localPos : square.keySet()) {
+        putBlock(to3D(p.add(localPos), z), square.get(localPos));
+      }
     }
   }
 

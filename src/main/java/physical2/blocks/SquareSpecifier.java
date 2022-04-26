@@ -36,4 +36,9 @@ public class SquareSpecifier {
   public int hashCode() {
     return s1.hashCode() + 10 * s2.hashCode() + (repeater ? 37 : 0);
   }
+
+  @Override
+  public String toString() {
+    return "(" + s1 + " -> " + s2 + ", repeater: " + repeater + ")";
+  }
 }
