@@ -4,6 +4,9 @@ import circuit.Pair;
 import graph.Edge;
 import graph.OrderedEdgeIterable;
 import graph.TwoWayDirectedGraph;
+import physical.things.Bounded;
+import physical.things.Bounds;
+import physical.things.Point3D;
 import physical2.tiny.BentPath;
 import physical2.tiny.VariableSignalPosMap;
 import physical2.two.Point2D;
@@ -12,12 +15,16 @@ import physical2.two.Side;
 import java.util.HashMap;
 import java.util.Map;
 
-public class PathDrawer<T> {
+public class PathDrawer<T> implements Bounded {
   private VariableSignalPosMap<T> varPosMap;
   private Map<Integer, Map<Point2D, Pair<Side, Side>>> paths;
 
   public PathDrawer(VariableSignalPosMap<T> varPosMap) {
     this.varPosMap = varPosMap;
+  }
+
+  public Map<Integer, Map<Point2D, Pair<Side, Side>>> getPaths() {
+    return paths;
   }
 
   public PathDrawer<T> makeLinear(VariableSignalPosMap<T> varPosMap, TwoWayDirectedGraph<T> graph) {
@@ -69,4 +76,18 @@ public class PathDrawer<T> {
   }
 
 
+  @Override
+  public Bounds bounds() {
+    Bounds b = null;
+
+    for (int z : paths.keySet()) {
+      Map<Point2D, Pair<Side, Side>> layer = paths.get(z);
+
+      for (Point2D p : layer.keySet()) {
+        b = Bounds.merge(b, new Point3D(p.getX(), p.getY(), z));
+      }
+    }
+
+    return b;
+  }
 }
