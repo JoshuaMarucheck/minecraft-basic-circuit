@@ -24,6 +24,14 @@ public class BentPath implements Iterable<Pair<Point2D, SquareSpecifier>> {
     this.end = end;
   }
 
+  public Point2D getStart() {
+    return start;
+  }
+
+  public Point2D getEnd() {
+    return end;
+  }
+
   @Override
   public Iterator<Pair<Point2D, SquareSpecifier>> iterator() {
     return new RepeaterInserter();
@@ -92,11 +100,17 @@ public class BentPath implements Iterable<Pair<Point2D, SquareSpecifier>> {
 
     @Override
     public boolean hasNext() {
-      return started && iter.hasNext();
+      return !started || iter.hasNext();
     }
 
     @Override
     public Pair<Point2D, Pair<Side, Side>> next() {
+      if (!started) {
+        // prevEdge is really our next edge
+        started = true;
+        return new Pair<>(prevEdge.getPoint(), new Pair<>(null, prevEdge.getSide()));
+      }
+
       EdgePoint nextEdge = EdgePoint.zoomOut(iter.next());
 
       Side nextSide;
@@ -136,6 +150,10 @@ public class BentPath implements Iterable<Pair<Point2D, SquareSpecifier>> {
     boolean done;
 
     private Point2D primaryDirection, secondaryDirection;
+
+    private static boolean onDiag(Point2D a) {
+      return (a.getX() + a.getY()) % 2 != 0;
+    }
 
     /**
      * Params are not zoomed in.
@@ -181,14 +199,14 @@ public class BentPath implements Iterable<Pair<Point2D, SquareSpecifier>> {
     }
 
     private void generateSecondaryDirection() {
-      // Assume's you're on the diagonal.
+      // Assumes you're on the diagonal.
       secondaryDirection = signDiffToEnd();
     }
 
     @Override
     public Point2D next() {
       Point2D prevPos = pos;
-      if (prevPos == zoomedEnd) {
+      if (prevPos.equals(zoomedEnd)) {
         done = true;
       }
       if (onDiagonal()) {

@@ -4,6 +4,7 @@ import physical.things.BlockConstant;
 import physical.things.Bounds;
 import physical.things.Point3D;
 import physical.transforms.Offset;
+import physical2.one.Range;
 import physical2.two.Point2D;
 
 import java.util.Map;
@@ -22,7 +23,7 @@ public class AbsolutePhysical3DMap2 {
     blocks = new BlockConstant[offsetUpper.getX()][offsetUpper.getY()][offsetUpper.getZ()];
   }
 
-  private int mapZ(int z) {
+  public static int mapZ(int z) {
     z = z * 2;
     z += z / 15;
     return z;
@@ -30,6 +31,28 @@ public class AbsolutePhysical3DMap2 {
 
   private Point3D to3D(Point2D p, int z) {
     return new Point3D(p.getX(), p.getY(), z);
+  }
+
+  /**
+   * In tiny coords
+   */
+  public void putForwardSignal(Point2D xy, Range zRange) {
+    Point3D lo = scale3.apply(new Point3D(xy.getX(), xy.getY(), zRange.getLower()));
+    Point3D hi = scale3.apply(new Point3D(xy.getX(), xy.getY(), zRange.getUpper()));
+
+    for (int z = lo.getZ(); z < hi.getZ(); z++) {
+      BlockConstant redstone = mod(z, 16) == 15 ? BlockConstant.REPEATER_Z : BlockConstant.REDSTONE;
+      putBlockRaw(new Point3D(lo.getX(), lo.getY(), z), redstone);
+      putBlockRaw(new Point3D(lo.getX(), lo.getY() - 1, z), BlockConstant.REDSTONE_BASE);
+    }
+  }
+
+  private static int mod(int a, int b) {
+    int r = a % b;
+    if (r < 0) {
+      r += b;
+    }
+    return r;
   }
 
   /**

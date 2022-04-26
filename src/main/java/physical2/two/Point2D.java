@@ -52,4 +52,9 @@ public class Point2D {
   public int hashCode() {
     return x * 31 + y * 37;
   }
+
+  @Override
+  public String toString() {
+    return "Point2D(" + x + ", " + y + ")";
+  }
 }

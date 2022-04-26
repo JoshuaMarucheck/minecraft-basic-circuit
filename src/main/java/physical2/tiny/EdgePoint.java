@@ -1,6 +1,5 @@
 package physical2.tiny;
 
-import circuit.Pair;
 import physical2.two.Point2D;
 import physical2.two.Side;
 
@@ -34,18 +33,22 @@ public class EdgePoint {
   public static EdgePoint zoomOut(Point2D point) {
     Point2D p = new Point2D(point.getX() / 2, point.getY() / 2);
     Side side;
-    if (point.getX() % 2 == 1) {
+    if (!isEven(point.getX())) {
       side = DOWN;
-      if (point.getY() % 2 == 1) {
+      if (!isEven(point.getY())) {
         throw new IllegalArgumentException("Point not on edge");
       }
     } else {
       side = LEFT;
-      if (point.getY() % 2 == 0) {
+      if (isEven(point.getY())) {
         throw new IllegalArgumentException("Point not on edge");
       }
     }
     return new EdgePoint(p, side);
+  }
+
+  private static boolean isEven(int a) {
+    return a % 2 == 0;
   }
 
   public EdgePoint altPointSide() {

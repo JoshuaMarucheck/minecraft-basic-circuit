@@ -2,7 +2,6 @@ package physical2;
 
 import circuit.AnnotatedCircuit;
 import circuit.preconstructed.CircuitCollection;
-import circuit.preconstructed.LowLevelCircuitGenerator;
 import dev.dewy.nbt.tags.collection.CompoundTag;
 import nbt.NBTMaker;
 import physical2.blocks.BlockDrawer;
@@ -23,7 +22,7 @@ import static nbt.NBTMaker.NBT;
  */
 public class SimplifiedPhysicalCircuitPipeline {
   public static void circuitToSchematic(CircuitCollection cc, String name) throws IOException {
-    circuitToSchematic(cc.get(name), Paths.get(root).getParent().resolve("schematic_out").resolve(name).toFile());
+    circuitToSchematic(cc.get(name).trim(), Paths.get(root).getParent().resolve("schematic_out").resolve(name).toFile());
   }
 
   public static void circuitToSchematic(AnnotatedCircuit circuit, File outFile) throws IOException {

@@ -19,6 +19,10 @@ public class BlockDrawer {
         blocks.putPlate(z, p, sides);
       }
     }
+
+    for (Point2D xy : drawer.rangePositions()) {
+      blocks.putForwardSignal(xy, drawer.getZRange(xy));
+    }
   }
 
   /**
