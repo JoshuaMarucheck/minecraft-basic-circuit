@@ -59,4 +59,11 @@ public class AbsolutePhysical3DMap2 {
   public void putBlockRawUnsafe(Point3D p, BlockConstant bc) {
     blocks[p.getX()][p.getY()][p.getZ()] = bc;
   }
+
+  /**
+   * Plz donut edit
+   */
+  public BlockConstant[][][] getBlocks() {
+    return blocks;
+  }
 }

@@ -1,15 +1,14 @@
 package physical2.blocks;
 
+import physical.things.BlockConstant;
 import physical2.two.Point2D;
 
 import java.util.Map;
 
 public class BlockDrawer {
-  PathDrawer<?> drawer;
-  AbsolutePhysical3DMap2 blocks;
+  private AbsolutePhysical3DMap2 blocks;
 
   public BlockDrawer(PathDrawer<?> drawer) {
-    this.drawer = drawer;
     blocks = new AbsolutePhysical3DMap2(drawer.bounds());
 
     Map<Integer, Map<Point2D, SquareSpecifier>> paths = drawer.getPaths();
@@ -20,5 +19,12 @@ public class BlockDrawer {
         blocks.putPlate(z, p, sides);
       }
     }
+  }
+
+  /**
+   * Plz donut edit
+   */
+  public BlockConstant[][][] getBlocks() {
+    return blocks.getBlocks();
   }
 }

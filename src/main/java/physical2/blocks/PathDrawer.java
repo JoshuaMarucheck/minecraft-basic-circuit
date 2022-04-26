@@ -27,7 +27,7 @@ public class PathDrawer<T> implements Bounded {
     return paths;
   }
 
-  public PathDrawer<T> makeLinear(VariableSignalPosMap<T> varPosMap, TwoWayDirectedGraph<T> graph) {
+  public static <T> PathDrawer<T> makeLinear(VariableSignalPosMap<T> varPosMap, TwoWayDirectedGraph<T> graph) {
     PathDrawer<T> r = new PathDrawer<>(varPosMap);
     r.placeAllLinear(graph);
     return r;
