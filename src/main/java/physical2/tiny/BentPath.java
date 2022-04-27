@@ -59,10 +59,10 @@ public class BentPath implements Iterable<Pair<Point2D, SquareSpecifier>> {
   }
 
   private class RepeaterInserter implements Iterator<Pair<Point2D, SquareSpecifier>> {
-    private BentIterator iter;
+    private FilteredBentIterator iter;
 
     RepeaterInserter() {
-      iter = new BentIterator();
+      iter = new FilteredBentIterator();
     }
 
     @Override
@@ -76,6 +76,71 @@ public class BentPath implements Iterable<Pair<Point2D, SquareSpecifier>> {
       Pair<Side, Side> sides = pair.getSecond();
       SquareSpecifier spec = new SquareSpecifier(sides.getFirst(), sides.getSecond(), true);
       return new Pair<>(pair.getFirst(), spec);
+    }
+  }
+
+  private class FilteredBentIterator implements Iterator<Pair<Point2D, Pair<Side, Side>>> {
+    private BentIterator iter;
+    boolean prepped;
+    boolean done;
+    boolean nextDone;
+    /**
+     * The accumulated item to return next
+     */
+    Pair<Point2D, Pair<Side, Side>> next;
+    /**
+     * The first item popped from the iterator with a different Point2D than the ones before it
+     */
+    Pair<Point2D, Pair<Side, Side>> nextNext;
+
+    FilteredBentIterator() {
+      this.iter = new BentIterator();
+      done = false;
+      prepped = false;
+      nextDone = false;
+    }
+
+    private void prepNext() {
+      // next is invalid
+      if (!prepped) {
+        if (iter.hasNext()) {
+          Point2D p = nextNext.getFirst();
+          Side start = nextNext.getSecond().getFirst();
+          Side end = nextNext.getSecond().getSecond();
+          Pair<Point2D, Pair<Side, Side>> item;
+          do {
+            item = iter.next();
+            if (end == item.getSecond().getFirst()) {
+              end = item.getSecond().getSecond();
+            } else {
+              break;
+            }
+          } while (iter.hasNext());
+          next = new Pair<>(p, new Pair<>(start, end));
+          nextNext = item;
+        } else {
+          if (nextDone) {
+            done = true;
+          } else {
+            nextDone = true;
+            next = nextNext;
+          }
+        }
+        prepped = true;
+      }
+    }
+
+    @Override
+    public boolean hasNext() {
+      prepNext();
+      return !done;
+    }
+
+    @Override
+    public Pair<Point2D, Pair<Side, Side>> next() {
+      prepNext();
+      prepped = false;
+      return next;
     }
   }
 
@@ -174,7 +239,11 @@ public class BentPath implements Iterable<Pair<Point2D, SquareSpecifier>> {
       }
 
       pos = zoomedStart;
-      primaryDirection = signDiffToEnd();
+      if (Math.abs(zoomedEnd.getX() - zoomedStart.getX()) >= Math.abs(zoomedEnd.getY() - zoomedStart.getY())) {
+        primaryDirection = new Point2D(2 * sign(zoomedEnd.getX() - zoomedStart.getX()), 0);
+      } else {
+        primaryDirection = signDiffToEnd();
+      }
       secondaryDirection = null;
     }
 
