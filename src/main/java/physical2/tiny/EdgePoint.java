@@ -31,20 +31,23 @@ public class EdgePoint {
    * @return A full sized point
    */
   public static EdgePoint zoomOut(Point2D point) {
-    Point2D p = new Point2D(point.getX() / 2, point.getY() / 2);
-    Side side;
+    Point2D p = new Point2D(Math.floorDiv(point.getX(), 2), Math.floorDiv(point.getY(), 2));
+    Side side = canonicalSide(point);
+    return new EdgePoint(p, side);
+  }
+
+  public static Side canonicalSide(Point2D point) {
     if (!isEven(point.getX())) {
-      side = DOWN;
       if (!isEven(point.getY())) {
         throw new IllegalArgumentException("Point not on edge");
       }
+      return DOWN;
     } else {
-      side = LEFT;
       if (isEven(point.getY())) {
         throw new IllegalArgumentException("Point not on edge");
       }
+      return LEFT;
     }
-    return new EdgePoint(p, side);
   }
 
   private static boolean isEven(int a) {
@@ -90,5 +93,10 @@ public class EdgePoint {
     }
 
     return new Point2D(point.getX() * 2 + x, point.getY() * 2 + y);
+  }
+
+  @Override
+  public String toString() {
+    return "EdgePoint(" + point + ", " + side + ")";
   }
 }

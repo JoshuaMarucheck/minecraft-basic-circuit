@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import static physical2.tiny.EdgePoint.canonicalSide;
 import static physical2.two.Side.DOWN;
 
 
@@ -60,9 +61,11 @@ public class BentPath implements Iterable<Pair<Point2D, SquareSpecifier>> {
 
   private class RepeaterInserter implements Iterator<Pair<Point2D, SquareSpecifier>> {
     private FilteredBentIterator iter;
+    private int repeatIndex;
 
     RepeaterInserter() {
       iter = new FilteredBentIterator();
+      repeatIndex = 0;
     }
 
     @Override
@@ -72,9 +75,14 @@ public class BentPath implements Iterable<Pair<Point2D, SquareSpecifier>> {
 
     @Override
     public Pair<Point2D, SquareSpecifier> next() {
+      repeatIndex++;
+      if (repeatIndex % 3 == 0) {
+        repeatIndex = 0;
+      }
+
       Pair<Point2D, Pair<Side, Side>> pair = iter.next();
       Pair<Side, Side> sides = pair.getSecond();
-      SquareSpecifier spec = new SquareSpecifier(sides.getFirst(), sides.getSecond(), true);
+      SquareSpecifier spec = new SquareSpecifier(sides.getFirst(), sides.getSecond(), repeatIndex == 0);
       return new Pair<>(pair.getFirst(), spec);
     }
   }
@@ -97,7 +105,12 @@ public class BentPath implements Iterable<Pair<Point2D, SquareSpecifier>> {
       this.iter = new BentIterator();
       done = false;
       prepped = false;
-      nextDone = false;
+      if (iter.hasNext()) {
+        nextNext = iter.next();
+        nextDone = false;
+      } else {
+        nextDone = true;
+      }
     }
 
     private void prepNext() {
@@ -188,7 +201,8 @@ public class BentPath implements Iterable<Pair<Point2D, SquareSpecifier>> {
           if (!nextEdge.getPoint().equals(prevEdge.getPoint())) {
             nextEdge = nextEdge.altPointSide();
             if (!nextEdge.getPoint().equals(prevEdge.getPoint())) {
-              throw new IllegalStateException("No overlap!");
+              prevEdge = prevEdge.altPointSide();
+              throw new IllegalStateException("No overlap between " + prevEdge + " and " + nextEdge + "!");
             }
           }
         }
@@ -224,7 +238,11 @@ public class BentPath implements Iterable<Pair<Point2D, SquareSpecifier>> {
     private Point2D zoomedEnd;
     boolean done;
 
-    private Point2D primaryDirection, secondaryDirection;
+    /**
+     * Might be horizontal if that's a better first direction to move.
+     */
+    private Point2D primaryDirection;
+    private Point2D secondaryDirection;
 
     private static boolean onDiag(Point2D a) {
       return (a.getX() + a.getY()) % 2 != 0;
@@ -258,7 +276,8 @@ public class BentPath implements Iterable<Pair<Point2D, SquareSpecifier>> {
     }
 
     private boolean onDiagonal() {
-      return pos.subtract(zoomedEnd).dot(primaryDirection) == 0;
+      Point2D p = pos.subtract(zoomedEnd);
+      return Math.abs(p.getX()) == Math.abs(p.getY());
     }
 
     private static int sign(int i) {
@@ -270,6 +289,9 @@ public class BentPath implements Iterable<Pair<Point2D, SquareSpecifier>> {
       return !done;
     }
 
+    /**
+     * @return A diagonal-axis-aligned vector vaguely pointing towards {@code zoomedEnd} from {@code pos}
+     */
     public Point2D signDiffToEnd() {
       Point2D diff = zoomedEnd.subtract(pos);
       int xDiff = diff.getX();
@@ -294,7 +316,19 @@ public class BentPath implements Iterable<Pair<Point2D, SquareSpecifier>> {
         }
         pos = pos.add(secondaryDirection);
       } else {
-        pos = pos.add(primaryDirection);
+        if (primaryDirection.getX() % 2 == 0) {
+          switch (canonicalSide(pos)) {
+            case UP:
+            case DOWN:
+              pos = pos.add(signDiffToEnd());
+              break;
+            default:
+              pos = pos.add(primaryDirection);
+              break;
+          }
+        } else {
+          pos = pos.add(primaryDirection);
+        }
       }
       return prevPos;
     }
