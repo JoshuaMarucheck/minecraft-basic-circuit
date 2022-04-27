@@ -178,20 +178,30 @@ public class BentPath implements Iterable<Pair<Point2D, SquareSpecifier>> {
 
       EdgePoint nextEdge = EdgePoint.zoomOut(iter.next());
 
-      Side nextSide;
+      Side returnSide;
 
-      if (nextEdge.getPoint().equals(prevEdge.getPoint())) {
-        nextSide = nextEdge.getSide();
+      // Try all orientations of both nextEdge and prevEdge to get their Point2Ds to overlap
+      if (!nextEdge.getPoint().equals(prevEdge.getPoint())) {
         nextEdge = nextEdge.altPointSide();
-      } else {
-        nextSide = nextEdge.getSide().flip();
+        if (!nextEdge.getPoint().equals(prevEdge.getPoint())) {
+          prevEdge = prevEdge.altPointSide();
+          if (!nextEdge.getPoint().equals(prevEdge.getPoint())) {
+            nextEdge = nextEdge.altPointSide();
+            if (!nextEdge.getPoint().equals(prevEdge.getPoint())) {
+              throw new IllegalStateException("No overlap!");
+            }
+          }
+        }
       }
+
+      returnSide = nextEdge.getSide();
+      nextEdge = nextEdge.altPointSide();
 
       Pair<Point2D, Pair<Side, Side>> r = new Pair<>(
           prevEdge.getPoint(),
           new Pair<>(
               prevEdge.getSide(),
-              nextSide
+              returnSide
           )
       );
       prevEdge = nextEdge;
