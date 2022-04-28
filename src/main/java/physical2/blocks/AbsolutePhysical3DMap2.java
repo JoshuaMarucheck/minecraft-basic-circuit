@@ -19,13 +19,24 @@ import static physical2.blocks.SideMapping.*;
 public class AbsolutePhysical3DMap2 {
   private BlockConstant[][][] blocks;
   private Function<Point3D, Point3D> scale3;
+  /**
+   * In zoomed out coords
+   */
+  private Bounds validPositions;
 
+  /**
+   * @param b Path bounds
+   */
   public AbsolutePhysical3DMap2(Bounds b) {
+    validPositions = b;
     Offset offset = new Offset(b.getLower().negate());
 
     scale3 = offset.compose(p -> new Point3D(X_SCALE * p.getX(), mapY(p.getY()), mapZ(p.getZ())));
 
     Point3D offsetUpper = scale3.apply(b.getUpper()).translate(X_BUFFER, Y_BUFFER, 0);
+    // Translate by 1 in each direction to capture the outermost edge
+    // Translate by an extra 1 in z to capture the circuit output
+    offsetUpper = offsetUpper.translate(1, 1, 2);
     blocks = new BlockConstant[offsetUpper.getX()][offsetUpper.getY()][offsetUpper.getZ()];
   }
 
@@ -37,9 +48,13 @@ public class AbsolutePhysical3DMap2 {
     return 1 + Y_SCALE * y;
   }
 
+  /**
+   * Adds an extra 1 for each repeater that needs to be placed
+   * Also adds 1 to give space for input
+   */
   public static int mapZ(int z) {
     z = z * 2;
-    z += z / 15;
+    z += 1;
     return z;
   }
 
@@ -55,7 +70,7 @@ public class AbsolutePhysical3DMap2 {
     Point3D hi = scale3.apply(new Point3D(xy.getX(), xy.getY(), zRange.getUpper()));
 
     for (int z = lo.getZ(); z < hi.getZ(); z++) {
-      BlockConstant redstone = mod(z, 16) == 15 ? BlockConstant.REPEATER_Z : BlockConstant.REDSTONE;
+      BlockConstant redstone = mod(z, 16) == 14 ? BlockConstant.REPEATER_Z : BlockConstant.REDSTONE;
       putBlockRaw(new Point3D(lo.getX(), lo.getY(), z), redstone);
       putBlockRaw(new Point3D(lo.getX(), lo.getY() - 1, z), BlockConstant.REDSTONE_BASE);
     }
@@ -112,6 +127,6 @@ public class AbsolutePhysical3DMap2 {
   }
 
   public int maxZ() {
-    return blocks[0][0].length - 1;
+    return validPositions.getUpper().getZ();
   }
 }
