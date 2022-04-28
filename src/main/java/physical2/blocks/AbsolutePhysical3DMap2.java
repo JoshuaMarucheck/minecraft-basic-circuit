@@ -111,7 +111,8 @@ public class AbsolutePhysical3DMap2 {
     if (oldBc == null || oldBc == BlockConstant.EMPTY) {
       putBlockRawUnsafe(p, bc);
     } else if (oldBc != bc) {
-      throw new IllegalArgumentException("Block type mismatch overlap");
+      System.err.println("Block type mismatch overlap at " + p);
+      putBlockRawUnsafe(p, BlockConstant.ERROR);
     }
   }
 
