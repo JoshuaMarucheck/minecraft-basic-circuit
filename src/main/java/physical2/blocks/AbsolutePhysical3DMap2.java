@@ -24,9 +24,9 @@ public class AbsolutePhysical3DMap2 {
   public AbsolutePhysical3DMap2(Bounds b) {
     Offset offset = new Offset(b.getLower().negate());
 
-    scale3 = offset.compose(p -> new Point3D(X_SCALE * p.getX(), Y_SCALE * p.getY(), mapZ(p.getZ())));
+    scale3 = offset.compose(p -> new Point3D(X_SCALE * p.getX(), 1 + Y_SCALE * p.getY(), mapZ(p.getZ())));
 
-    Point3D offsetUpper = scale3.apply(b.getUpper());
+    Point3D offsetUpper = scale3.apply(b.getUpper().translate(3, 4, 0));
     blocks = new BlockConstant[offsetUpper.getX()][offsetUpper.getY()][offsetUpper.getZ()];
   }
 
@@ -62,9 +62,9 @@ public class AbsolutePhysical3DMap2 {
     return r;
   }
 
-    /**
-     * In tiny coords
-     */
+  /**
+   * In tiny coords
+   */
   public void putPath(Integer z, BentPath bp) {
     Iterator<Pair<Point2D, Map<Point2D, BlockConstant>>> squares = new PairSecondIterator<>(bp.iterator(), SideMapping::iterateOverPath);
     for (; squares.hasNext(); ) {
@@ -84,7 +84,7 @@ public class AbsolutePhysical3DMap2 {
   public void putBlockRaw(Point3D p, BlockConstant bc) {
     BlockConstant oldBc = blocks[p.getX()][p.getY()][p.getZ()];
 
-    if (oldBc == BlockConstant.EMPTY) {
+    if (oldBc == null || oldBc == BlockConstant.EMPTY) {
       putBlockRawUnsafe(p, bc);
     } else if (oldBc != bc) {
       throw new IllegalArgumentException("Block type mismatch overlap");

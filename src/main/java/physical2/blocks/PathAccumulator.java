@@ -144,7 +144,7 @@ public class PathAccumulator<T> implements Bounded {
   public Bounds bounds() {
     Bounds b = null;
 
-    for (int z : paths.keySet()) {
+    for (int z : consumedPoints.keySet()) {
       Set<Point2D> layer = consumedPoints.get(z);
 
       for (Point2D p : layer) {

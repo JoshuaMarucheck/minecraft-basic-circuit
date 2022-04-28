@@ -39,7 +39,7 @@ public class SideMapping {
         "",
         "!"}
     ));
-    r.put(new SquareSpecifier(LEFT, RIGHT, true), parseStringMap(new String[]{
+    r.put(new SquareSpecifier(RIGHT, LEFT, true), parseStringMap(new String[]{
         "..<..",
         "sssss",
         "",
@@ -91,6 +91,12 @@ public class SideMapping {
         "",
         "!  ~."}
     ));
+    r.put(new SquareSpecifier(LEFT, DOWN, true), parseStringMap(new String[]{
+        "...p",
+        "sssr",
+        "",
+        "!  ~."}
+    ));
 
     r.put(new SquareSpecifier(DOWN, RIGHT, false), parseStringMap(new String[]{
         "   ~..",
@@ -102,7 +108,13 @@ public class SideMapping {
         "   p..",
         "   rss",
         "",
-        "~  ~."}
+        "!  ~."}
+    ));
+    r.put(new SquareSpecifier(RIGHT, DOWN, true), parseStringMap(new String[]{
+        "   p..",
+        "   rss",
+        "",
+        "!  ~."}
     ));
 
     return r;
@@ -110,7 +122,9 @@ public class SideMapping {
 
   private static Map<Pair<SquareSpecifier, SquareSpecifier>, Pair<Map<Point2D, BlockConstant>, Map<Point2D, BlockConstant>>> defaultDoubleMappings() {
     Map<Pair<SquareSpecifier, SquareSpecifier>, Pair<Map<Point2D, BlockConstant>, Map<Point2D, BlockConstant>>> r = new HashMap<>();
-    r.put(new Pair<>(new SquareSpecifier(LEFT, DOWN, false), new SquareSpecifier(DOWN, RIGHT, false)), new Pair<>(parseStringMap(new String[]{
+
+
+    Pair<Map<Point2D, BlockConstant>, Map<Point2D, BlockConstant>> diag1 = new Pair<>(parseStringMap(new String[]{
         ".~",
         "s.~",
         "! s."
@@ -120,9 +134,12 @@ public class SideMapping {
         "    s.",
         "     s",
         "!"
-    })));
+    }));
+    r.put(new Pair<>(new SquareSpecifier(LEFT, DOWN, false), new SquareSpecifier(UP, RIGHT, false)), diag1);
+    r.put(new Pair<>(new SquareSpecifier(RIGHT, UP, false), new SquareSpecifier(DOWN, LEFT, false)), diag1);
 
-    r.put(new Pair<>(new SquareSpecifier(RIGHT, DOWN, false), new SquareSpecifier(DOWN, LEFT, false)), new Pair<>(parseStringMap(new String[]{
+
+    Pair<Map<Point2D, BlockConstant>, Map<Point2D, BlockConstant>> diag2 = new Pair<>(parseStringMap(new String[]{
         "    ~.",
         "   ~.s",
         "!  ~.s"
@@ -132,7 +149,9 @@ public class SideMapping {
         ".s",
         "s",
         "!"
-    })));
+    }));
+    r.put(new Pair<>(new SquareSpecifier(RIGHT, DOWN, false), new SquareSpecifier(UP, LEFT, false)), diag2);
+    r.put(new Pair<>(new SquareSpecifier(LEFT, UP, false), new SquareSpecifier(DOWN, RIGHT, false)), diag2);
 
 
     return r;
@@ -180,6 +199,10 @@ public class SideMapping {
         return BlockConstant.REPEATER_X_;
       case '>':
         return BlockConstant.REPEATER_X;
+      case 'p':
+        return BlockConstant.DOWN_PISTON;
+      case 'r':
+        return BlockConstant.REDSTONE_BLOCK;
       default:
         throw new IllegalArgumentException("Not a valid block character: '" + c + "'");
     }
@@ -300,9 +323,18 @@ public class SideMapping {
           return r.getFirst();
         }
         // Give up on pairing items
+        Map<Point2D, BlockConstant> r0 = singleMappings.get(s0);
+        if (r0 == null) {
+          throw new IllegalStateException("Unrecognized SquareSpecifier sequence: " + s0 + ", " + s1);
+        }
+        return r0;
+      } else {
+        Map<Point2D, BlockConstant> r0 = singleMappings.get(s0);
+        if (r0 == null) {
+          throw new IllegalStateException("Unrecognized SquareSpecifier sequence: " + s0 + " [End of Sequence]");
+        }
+        return r0;
       }
-
-      return singleMappings.get(s0);
     }
   }
 }

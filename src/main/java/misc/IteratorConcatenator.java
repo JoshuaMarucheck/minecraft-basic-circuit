@@ -1,5 +1,7 @@
 package misc;
 
+import graph.EmptyIterator;
+
 import java.util.Iterator;
 
 public class IteratorConcatenator<T> implements Iterator<T> {
@@ -8,6 +10,11 @@ public class IteratorConcatenator<T> implements Iterator<T> {
 
   public IteratorConcatenator(Iterator<Iterator<T>> iterIter) {
     this.iterIter = iterIter;
+    if (iterIter.hasNext()) {
+      localIter = iterIter.next();
+    } else {
+      localIter = new EmptyIterator<>();
+    }
   }
 
   private void prepNext() {

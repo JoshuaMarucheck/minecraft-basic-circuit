@@ -3,7 +3,7 @@ import circuit.preconstructed.LowLevelCircuitGenerator;
 
 import java.io.File;
 
-import static nbt.Constants.root;
+import static nbt.Constants.circuitRoot;
 import static physical2.SimplifiedPhysicalCircuitPipeline.circuitToSchematic;
 
 public class SimplePipelineTester {
@@ -12,7 +12,7 @@ public class SimplePipelineTester {
     CircuitCollection cc64 = LowLevelCircuitGenerator.defaultNamedCircuits();
     cc64.addAll(gen.operators(64));
 
-    cc64.getOrLoad(new File(root + "final/is_palindrome.txt"));
+    cc64.getOrLoad(new File(circuitRoot + "final/is_palindrome.txt"));
 
     circuitToSchematic(cc64, "is_palindrome");
   }
