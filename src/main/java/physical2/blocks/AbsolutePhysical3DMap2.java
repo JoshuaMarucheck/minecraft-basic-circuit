@@ -30,6 +30,10 @@ public class AbsolutePhysical3DMap2 {
     blocks = new BlockConstant[offsetUpper.getX()][offsetUpper.getY()][offsetUpper.getZ()];
   }
 
+  public Point3D size() {
+    return new Point3D(blocks.length, blocks[0].length, blocks[0][0].length);
+  }
+
   public static int mapZ(int z) {
     z = z * 2;
     z += z / 15;

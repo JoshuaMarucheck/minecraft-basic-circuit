@@ -1,6 +1,7 @@
 package physical2.blocks;
 
 import physical.things.BlockConstant;
+import physical.things.Point3D;
 import physical2.one.Range;
 import physical2.tiny.BentPath;
 import physical2.tiny.VariableSignalPosMap;
@@ -40,8 +41,10 @@ public class BlockDrawer {
         blocks.putForwardSignal(output, Range.make(drawer.getZRange(output).getUpper(), blocks.maxZ()));
       }
     }
+  }
 
-
+  public Point3D size() {
+    return blocks.size();
   }
 
   /**

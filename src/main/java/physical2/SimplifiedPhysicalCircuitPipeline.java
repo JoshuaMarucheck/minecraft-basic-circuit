@@ -39,6 +39,7 @@ public class SimplifiedPhysicalCircuitPipeline {
     PathAccumulator pathAccumulator = PathAccumulator.makeLinear(sigPosMap, circuit.getGraph());
     print("Drawing blocks", verbose);
     BlockDrawer blockDrawer = new BlockDrawer(pathAccumulator);
+    print("Size: " + blockDrawer.size(), verbose);
     print("Building tag", verbose);
     CompoundTag tag;
     try {
