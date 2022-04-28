@@ -20,6 +20,10 @@ public class Edge<T> implements Iterable<T> {
     return end;
   }
 
+  public boolean isSelfEdge() {
+    return Objects.equals(start, end);
+  }
+
   public Edge<T> reverse() {
     return new Edge<>(end, start);
   }

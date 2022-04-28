@@ -32,6 +32,13 @@ public class TwoWayDirectedGraph<T> {
   }
 
   /**
+   * @return The number of edges in this graph
+   */
+  public int edgeCount() {
+    return forward.edgeCount();
+  }
+
+  /**
    * @return a Set view of the nodes in this graph
    */
   public Set<T> nodes() {
@@ -113,5 +120,25 @@ public class TwoWayDirectedGraph<T> {
 
   public Map<T, Integer> distanceMap(T start) {
     return distanceMap(start, null);
+  }
+
+  public boolean isSingleConnectedComponent() {
+    if (size() == 0) {
+      return true;
+    }
+    return distanceMap(nodes().iterator().next()).size() == size();
+  }
+
+  public Set<Set<T>> connectedComponents() {
+    HashSet<Set<T>> r = new HashSet<>();
+    HashSet<T> handledNodes = new HashSet<>();
+    for (T node : this.nodes()) {
+      if (!handledNodes.contains(node)) {
+        Set<T> component = distanceMap(node).keySet();
+        r.add(component);
+        handledNodes.addAll(component);
+      }
+    }
+    return r;
   }
 }

@@ -30,6 +30,17 @@ public class DirectedGraph<T> {
     return adjList.size();
   }
 
+  /**
+   * @return The number of edges in this graph
+   */
+  public int edgeCount() {
+    int r = 0;
+    for (T start : adjList.keySet()) {
+      r += adjList.get(start).size();
+    }
+    return r;
+  }
+
   public void addNode(T node) {
     adjList.put(node, new HashSet<>());
   }
