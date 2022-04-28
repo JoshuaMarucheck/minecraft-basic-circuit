@@ -4,10 +4,14 @@ import physical2.two.Point2D;
 
 import java.util.Iterator;
 
+import static physical2.blocks.AbsolutePhysical3DMap2.mapY;
+import static physical2.blocks.SideMapping.Y_BUFFER;
+
 /**
  * In tiny coords
  */
 public class DefaultLegalPositions implements Iterable<Point2D> {
+  private static final int WORLD_HEIGHT = 256;
 
   @Override
   public Iterator<Point2D> iterator() {
@@ -29,11 +33,10 @@ public class DefaultLegalPositions implements Iterable<Point2D> {
 
     @Override
     public Point2D next() {
-      if (y >= 255 / 5) {
+      y++;
+      if (mapY(y) + Y_BUFFER >= WORLD_HEIGHT) {
         y = 0;
         x++;
-      } else {
-        y++;
       }
 
       return new Point2D(x, y);

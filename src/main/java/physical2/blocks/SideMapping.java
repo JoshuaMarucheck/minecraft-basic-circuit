@@ -16,6 +16,11 @@ public class SideMapping {
   public static int X_SCALE = 5;
   public static int Y_SCALE = 5;
 
+  /**
+   * The amount of buffer needed at the top of the map to allow for redstone above the top mapped center points.
+   */
+  public static int Y_BUFFER = 3;
+
   private static Map<SquareSpecifier, Map<Point2D, BlockConstant>> singleMappings = defaultSingleMappings();
   private static Map<Pair<SquareSpecifier, SquareSpecifier>, Pair<Map<Point2D, BlockConstant>, Map<Point2D, BlockConstant>>> doubleMappings = defaultDoubleMappings();
 

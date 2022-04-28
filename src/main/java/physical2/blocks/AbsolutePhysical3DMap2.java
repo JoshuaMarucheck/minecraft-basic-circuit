@@ -14,8 +14,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.function.Function;
 
-import static physical2.blocks.SideMapping.X_SCALE;
-import static physical2.blocks.SideMapping.Y_SCALE;
+import static physical2.blocks.SideMapping.*;
 
 public class AbsolutePhysical3DMap2 {
   private BlockConstant[][][] blocks;
@@ -24,14 +23,18 @@ public class AbsolutePhysical3DMap2 {
   public AbsolutePhysical3DMap2(Bounds b) {
     Offset offset = new Offset(b.getLower().negate());
 
-    scale3 = offset.compose(p -> new Point3D(X_SCALE * p.getX(), 1 + Y_SCALE * p.getY(), mapZ(p.getZ())));
+    scale3 = offset.compose(p -> new Point3D(X_SCALE * p.getX(), mapY(p.getY()), mapZ(p.getZ())));
 
-    Point3D offsetUpper = scale3.apply(b.getUpper().translate(3, 4, 0));
+    Point3D offsetUpper = scale3.apply(b.getUpper()).translate(3, Y_BUFFER, 0);
     blocks = new BlockConstant[offsetUpper.getX()][offsetUpper.getY()][offsetUpper.getZ()];
   }
 
   public Point3D size() {
     return new Point3D(blocks.length, blocks[0].length, blocks[0][0].length);
+  }
+
+  public static int mapY(int y) {
+    return 1 + Y_SCALE * y;
   }
 
   public static int mapZ(int z) {
