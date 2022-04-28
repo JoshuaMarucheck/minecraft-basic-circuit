@@ -12,8 +12,10 @@ public class SimplePipelineTester {
     CircuitCollection cc64 = LowLevelCircuitGenerator.defaultNamedCircuits();
     cc64.addAll(gen.operators(64));
 
+    cc64.getOrLoad(new File(circuitRoot + "specialized/atLeast2.txt"));
     cc64.getOrLoad(new File(circuitRoot + "final/is_palindrome.txt"));
 
-    circuitToSchematic(cc64, "is_palindrome", true);
+//    circuitToSchematic(cc64, "is_palindrome", true);
+    circuitToSchematic(cc64, "atLeast2", true);
   }
 }
