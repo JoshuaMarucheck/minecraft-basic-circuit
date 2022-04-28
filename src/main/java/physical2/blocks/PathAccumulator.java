@@ -44,13 +44,47 @@ public class PathAccumulator<T> implements Bounded {
     return Range.merge(pair.getFirst(), pair.getSecond());
   }
 
+  public static <T> PathAccumulator<T> makeQuadratic(VariableSignalPosMap<T> varPosMap, TwoWayDirectedGraph<T> graph) {
+    PathAccumulator<T> r = new PathAccumulator<>(varPosMap);
+    r.placeAllQuadratic(graph);
+    return r;
+  }
+
+  private void placeAllQuadratic(TwoWayDirectedGraph<T> graph) {
+    Map<T, Integer> minZPos = new HashMap<>();
+    for (Edge<T> torch : new OrderedEdgeIterable<>(graph)) {
+      // For a given wire, all inputs are handled before outputs
+      // So just make sure to place it at more than the maximum input position of the input wire
+
+      T inputWire = torch.getStart();
+      int z;
+      if (minZPos.containsKey(inputWire)) {
+        // We have placed an output before, and thus know that we can put any outputs before a certain point.
+        z = minZPos.get(inputWire);
+      } else {
+        // We haven't placed an output yet
+        Pair<Range, Range> ranges = zRange.get(varPosMap.getPos(torch.getStart()));
+        if (ranges == null) {
+          z = 0;
+        } else {
+          z = ranges.getFirst().getUpper() + 1;
+        }
+      }
+
+      BentPath path = varPosMap.getPath(torch);
+      while (pathOverlap(z, path)) {
+        z++;
+      }
+      minZPos.put(inputWire, z);
+      addPathUnsafe(z, varPosMap.getPath(torch));
+    }
+  }
+
   public static <T> PathAccumulator<T> makeLinear(VariableSignalPosMap<T> varPosMap, TwoWayDirectedGraph<T> graph) {
     PathAccumulator<T> r = new PathAccumulator<>(varPosMap);
     r.placeAllLinear(graph);
     return r;
   }
-
-  // TODO: add makeQuadratic
 
   private void placeAllLinear(TwoWayDirectedGraph<T> graph) {
     int z = 0;
