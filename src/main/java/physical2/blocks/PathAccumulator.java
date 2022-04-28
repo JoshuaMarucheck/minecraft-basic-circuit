@@ -125,6 +125,9 @@ public class PathAccumulator<T> implements Bounded {
     for (Pair<Point2D, SquareSpecifier> pair : path) {
       layer.add(pair.getFirst());
     }
+
+    // Add the path itself
+    ensureLayer(z).add(path);
   }
 
   /**
