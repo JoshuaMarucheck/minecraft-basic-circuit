@@ -325,6 +325,8 @@ public class SideMapping {
         Pair<Map<Point2D, BlockConstant>, Map<Point2D, BlockConstant>> r = doubleMappings.get(pair);
         if (r != null) {
           next = r.getSecond();
+          interpretationQueue.remove();
+          interpretationQueue.remove();
           return r.getFirst();
         }
         // Give up on pairing items
@@ -332,12 +334,14 @@ public class SideMapping {
         if (r0 == null) {
           throw new IllegalStateException("Unrecognized SquareSpecifier sequence: " + s0 + ", " + s1);
         }
+        interpretationQueue.remove();
         return r0;
       } else {
         Map<Point2D, BlockConstant> r0 = singleMappings.get(s0);
         if (r0 == null) {
           throw new IllegalStateException("Unrecognized SquareSpecifier sequence: " + s0 + " [End of Sequence]");
         }
+        interpretationQueue.remove();
         return r0;
       }
     }
