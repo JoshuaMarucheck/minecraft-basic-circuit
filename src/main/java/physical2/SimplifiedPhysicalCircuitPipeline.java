@@ -16,14 +16,13 @@ import java.io.IOException;
 import java.nio.file.Paths;
 
 import static nbt.Constants.root;
-import static nbt.NBTMaker.NBT;
 
 /**
  * Creates a not space efficient redstone setup representing the given circuit.
  */
 public class SimplifiedPhysicalCircuitPipeline {
   public static void circuitToSchematic(CircuitCollection cc, String name) throws IOException {
-    circuitToSchematic(cc.get(name).trim(), Paths.get(root).resolve("schematic_out").resolve(name).toFile());
+    circuitToSchematic(cc.get(name).trim(), Paths.get(root).resolve("schematic").resolve(name).toFile());
   }
 
   public static void circuitToSchematic(AnnotatedCircuit circuit, File outFile) throws IOException {
@@ -44,6 +43,6 @@ public class SimplifiedPhysicalCircuitPipeline {
     } catch (SNBTParser.SNBTParseException e) {
       throw new IOException("Invalid NBT tag", e);
     }
-    NBT.toFile(tag, outFile);
+    NBTMaker.toFile(tag, outFile);
   }
 }
