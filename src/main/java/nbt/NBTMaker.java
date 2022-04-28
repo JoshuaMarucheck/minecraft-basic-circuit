@@ -1,6 +1,7 @@
 package nbt;
 
 import dev.dewy.nbt.Nbt;
+import dev.dewy.nbt.io.CompressionType;
 import dev.dewy.nbt.tags.collection.CompoundTag;
 import physical.things.BlockConstant;
 
@@ -45,11 +46,26 @@ public class NBTMaker {
     for (int y = 0; y < yWidth; y++) {
       for (int z = 0; z < zWidth; z++) {
         for (int x = 0; x < xWidth; x++) {
-          r[i++] = blockIds.get(blocks[x][y][z]);
+          BlockConstant bc = blocks[x][y][z];
+          if (bc == null) {
+            bc = BlockConstant.EMPTY;
+          }
+          Byte id = blockIds.get(bc);
+          if (id == null) {
+            throw new IllegalArgumentException("BlockConstant without id: " + blocks[x][y][z]);
+          }
+          r[i++] = id;
         }
       }
     }
 
     return r;
+  }
+
+  /**
+   * Compresses using gzip
+   */
+  public static void toFile(CompoundTag tag, File file) throws IOException {
+    NBT.toFile(tag, file, CompressionType.GZIP);
   }
 }

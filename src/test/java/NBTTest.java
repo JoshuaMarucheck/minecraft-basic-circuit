@@ -1,6 +1,7 @@
 import dev.dewy.nbt.tags.collection.CompoundTag;
 import dev.dewy.nbt.tags.primitive.StringTag;
 import nbt.Constants;
+import nbt.NBTMaker;
 import nbt.SNBTParser;
 
 import java.io.File;
@@ -20,6 +21,11 @@ public class NBTTest {
     checkFile(NBT_PATH.resolve("test_tag.json").toFile());
     checkFile(NBT_PATH.resolve("base_tag.json").toFile());
     jsonTest();
+
+    NBTMaker.toFile(
+        (CompoundTag) SNBTParser.fromFile(NBT_PATH.resolve("flipflop.json").toFile()),
+        Paths.get(Constants.root).resolve("schematic").resolve("flipflop2.schem").toFile()
+    );
   }
 
   private static void checkFile(File file) throws IOException, SNBTParser.SNBTParseException, UnitTestFailException {

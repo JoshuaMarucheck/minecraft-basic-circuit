@@ -2,14 +2,15 @@ package nbt;
 
 import dev.dewy.nbt.api.Tag;
 import dev.dewy.nbt.tags.TagType;
+import dev.dewy.nbt.tags.array.ArrayTag;
+import dev.dewy.nbt.tags.array.ByteArrayTag;
+import dev.dewy.nbt.tags.array.IntArrayTag;
 import dev.dewy.nbt.tags.collection.CompoundTag;
 import dev.dewy.nbt.tags.collection.ListTag;
 import dev.dewy.nbt.tags.primitive.*;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Objects;
@@ -51,7 +52,6 @@ public class SNBTParser {
    */
   private static CompoundTag parseCompoundTag(SNBTTokenizer tokens) throws SNBTParseException {
     CompoundTag r = new CompoundTag();
-    boolean first = true;
 
     while (tokens.hasNext()) {
       String subtagName;
@@ -100,7 +100,7 @@ public class SNBTParser {
       case "{":
         return parseCompoundTag(tokens);
       case "[":
-        return parseList(tokens);
+        return parseListOrArray(tokens);
       case "\"":
         return parseString(tokens);
       default:
@@ -108,50 +108,117 @@ public class SNBTParser {
     }
   }
 
-  /**
-   * Placed so that the starting square bracket is removed
-   */
-  private static ListTag<Tag> parseList(SNBTTokenizer tokens) throws SNBTParseException {
-    TagType listType = null;
-    if (Objects.equals(tokens.peekChar(1), ';')) {
-      String item = tokens.next();
-      switch (item) {
-        case "I":
-          listType = TagType.INT;
-          break;
-        default:
-          throw new SNBTParseException("Unrecognized list type " + item, tokens);
+  private static IntArrayTag parseIntArray(SNBTTokenizer tokens) throws SNBTParseException {
+    ArrayList<Integer> list = new ArrayList<>();
+    ListIter iter = new ListIter(tokens);
+    while (iter.hasNext()) {
+      Tag tag = iter.next();
+      Integer i;
+      try {
+        i = (Integer) tag.getValue();
+      } catch (NullPointerException | ClassCastException e) {
+        throw new SNBTParseException("Value in int array is not int", tokens);
       }
-      if (!tokens.assertNext(";")) {
+      list.add(i);
+    }
+    return new IntArrayTag(list);
+  }
+
+  private static ByteArrayTag parseByteArray(SNBTTokenizer tokens) throws SNBTParseException {
+    ArrayList<Byte> list = new ArrayList<>();
+    ListIter iter = new ListIter(tokens);
+    while (iter.hasNext()) {
+      Tag tag = iter.next();
+      Byte b;
+      try {
+        b = (Byte) tag.getValue();
+      } catch (NullPointerException | ClassCastException e) {
+        throw new SNBTParseException("Value in int array is not int", tokens);
+      }
+      list.add(b);
+    }
+    return new ByteArrayTag(list);
+  }
+
+  private static ArrayTag parseArray(SNBTTokenizer tokens) throws SNBTParseException {
+    String item = tokens.next();
+    if (!tokens.assertNext(";")) {
+      throw new SNBTParseException("Missing semicolon after array identifier", tokens);
+    }
+    switch (item) {
+      case "I":
+        return parseIntArray(tokens);
+      case "B":
+        return parseByteArray(tokens);
+      default:
+        throw new SNBTParseException("Unrecognized array type " + item, tokens);
+    }
+  }
+
+  private static class ListIter implements Closeable {
+    private SNBTTokenizer tokens;
+    private boolean done;
+
+    /**
+     * @param tokens A tokenizer which just had the square bracket and any starting list identifiers removed
+     *               (i.e. it should not contain the "I;" or "B;" at the start)
+     */
+    ListIter(SNBTTokenizer tokens) {
+      this.tokens = tokens;
+      done = false;
+    }
+
+    public boolean hasNext() {
+      if (done) {
+        return false;
+      }
+      boolean next = tokens.peekChar() != ']';
+      if (!next) {
+        tokens.next();
+        done = true;
+      }
+      return next;
+    }
+
+    public Tag next() throws SNBTParseException {
+      Tag tag = parseTag(tokens);
+      if (tokens.peekChar() == ',') {
+        tokens.next();
+      } else if (tokens.peekChar() != ']') {
+        throw new SNBTParseException("Missing comma after list entry", tokens);
+      }
+      return tag;
+    }
+
+    public void close() {
+      if (!tokens.assertNext("]")) {
         throw new IllegalStateException();
       }
     }
+  }
 
+  private static ListTag<Tag> parseList(SNBTTokenizer tokens) throws SNBTParseException {
     ListTag<Tag> r = new ListTag<>();
 
-    boolean first = true;
+    ListIter iter = new ListIter(tokens);
 
-    while (tokens.peekChar() != ']') {
-      if (first) {
-        first = false;
-      } else {
-        if (!tokens.assertNext(",")) {
-          throw new SNBTParseException("Missing token ',' in list", tokens);
-        }
-      }
 
-      Tag tag = parseTag(tokens);
-      if (listType != null && tag.getTypeId() != listType.getId()) {
-        throw new SNBTParseException("Item doesn't match list type", tokens);
-      }
-      r.add(tag);
-    }
-
-    if (!tokens.assertNext("]")) {
-      throw new IllegalStateException();
+    while (iter.hasNext()) {
+      r.add(iter.next());
     }
 
     return r;
+  }
+
+  /**
+   * Placed so that the starting square bracket is removed
+   */
+  private static Tag parseListOrArray(SNBTTokenizer tokens) throws SNBTParseException {
+    if (Objects.equals(tokens.peekToken(1), ";")) {
+      return parseArray(tokens);
+    } else {
+      return parseList(tokens);
+    }
   }
 
   /**
@@ -165,7 +232,7 @@ public class SNBTParser {
     try {
 
       String clippedToken = numberToken.substring(0, len - 1);
-      switch (numberToken.charAt(len - 1)) {
+      switch (Character.toLowerCase(numberToken.charAt(len - 1))) {
         case 'b':
           return new ByteTag(Byte.parseByte(clippedToken));
         case 's':
@@ -261,6 +328,16 @@ public class SNBTParser {
      */
     public boolean assertNext(String next) {
       return hasNext() && next().equals(next);
+    }
+
+    public String peekToken(int i) {
+      int oldPos = pos;
+      for (int k = 0; k < i; k++) {
+        next();
+      }
+      String r = next();
+      pos = oldPos;
+      return r;
     }
 
     public Character peekChar() {
