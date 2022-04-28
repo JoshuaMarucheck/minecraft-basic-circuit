@@ -3,7 +3,6 @@ package nbt;
 import dev.dewy.nbt.Nbt;
 import dev.dewy.nbt.io.CompressionType;
 import dev.dewy.nbt.tags.collection.CompoundTag;
-import dev.dewy.nbt.tags.primitive.IntTag;
 import physical.things.BlockConstant;
 
 import java.io.File;
@@ -11,8 +10,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Map;
 
-import static nbt.BlockIdConstants.palette;
-import static nbt.BlockIdConstants.paletteSize;
+import static nbt.BlockIdConstants.*;
 import static nbt.Constants.nbtRoot;
 
 public class NBTMaker {
@@ -23,15 +21,21 @@ public class NBTMaker {
    * @param blocks Ordered XYZ
    */
   public static CompoundTag toNbt(BlockConstant[][][] blocks) throws IOException, SNBTParser.SNBTParseException {
-    CompoundTag tag = (CompoundTag) SNBTParser.fromFile(Paths.get(nbtRoot).resolve("base_tag.json").toFile());
+    CompoundTag tag = baseTag();
 
     tag.putShort("Width", (short) blocks.length);
     tag.putShort("Height", (short) blocks[0].length);
     tag.putShort("Length", (short) blocks[0][0].length);
 
-    tag.putByteArray("Blocks", flatten(blocks, palette));
-    tag.put(paletteSize);
+    tag.putByteArray("BlockData", flatten(blocks, palette));
 
+    return tag;
+  }
+
+  private static CompoundTag baseTag() throws IOException, SNBTParser.SNBTParseException {
+    CompoundTag tag = (CompoundTag) SNBTParser.fromFile(Paths.get(nbtRoot).resolve("base_tag.json").toFile());
+    tag.put(paletteTag);
+    tag.put(paletteSize);
     return tag;
   }
 

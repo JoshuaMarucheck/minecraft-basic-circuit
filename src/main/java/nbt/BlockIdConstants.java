@@ -1,7 +1,6 @@
 package nbt;
 
 import dev.dewy.nbt.tags.collection.CompoundTag;
-import dev.dewy.nbt.tags.primitive.ByteTag;
 import dev.dewy.nbt.tags.primitive.IntTag;
 import physical.things.BlockConstant;
 
@@ -10,32 +9,50 @@ import java.util.Map;
 
 public class BlockIdConstants {
 
+  public static void main(String[] args) {
+  }
+
   public static final Map<BlockConstant, Byte> palette;
   public static final CompoundTag paletteTag;
   public static final IntTag paletteSize;
 
   static {
     Map<BlockConstant, String> blockIds = makeDefaultMap();
-    palette = makeDefaultPallete(blockIds);
-    paletteTag = makePaletteTag(blockIds, palette);
-    paletteSize = new IntTag("PaletteMax", palette.size());
+    Map<String, Byte> paletteMap = makePaletteMap(blockIds);
+    palette = joinMap(blockIds, paletteMap);
+    paletteTag = makePaletteTag(paletteMap);
+    paletteSize = new IntTag("PaletteMax", paletteTag.size());
   }
 
-  private static <T> CompoundTag makePaletteTag(Map<T, String> blockIds, Map<T, Byte> palette) {
-    CompoundTag tag = new CompoundTag("Palette");
-    for (T t : blockIds.keySet()) {
-      tag.put(blockIds.get(t), new ByteTag(palette.get(t)));
-    }
-    return tag;
-  }
-
-  private static <T> Map<T, Byte> makeDefaultPallete(Map<T, ?> blockIds) {
-    Map<T, Byte> r = new HashMap<>();
-    byte b = 0;
-    for (T t : blockIds.keySet()) {
-      r.put(t, b++);
+  private static <A, B, C> Map<A, C> joinMap(Map<A, B> aToB, Map<B, C> bToC) {
+    Map<A, C> r = new HashMap<>();
+    for (A a : aToB.keySet()) {
+      r.put(a, bToC.get(aToB.get(a)));
     }
     return r;
+  }
+
+  private static <T> Map<T, Byte> makePaletteMap(Map<?, T> map) {
+    Map<T, Byte> r = new HashMap<>();
+    byte b = 0;
+    for (Object key : map.keySet()) {
+      T value = map.get(key);
+      if (!r.containsKey(value)) {
+        r.put(value, b++);
+        if (b == -1) {
+          throw new IllegalStateException("Too many block types in the palette");
+        }
+      }
+    }
+    return r;
+  }
+
+  private static CompoundTag makePaletteTag(Map<String, Byte> paletteMap) {
+    CompoundTag tag = new CompoundTag("Palette");
+    for (String t : paletteMap.keySet()) {
+      tag.put(t, new IntTag(paletteMap.get(t)));
+    }
+    return tag;
   }
 
   private static Map<BlockConstant, String> makeDefaultMap() {
