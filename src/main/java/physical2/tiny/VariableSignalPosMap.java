@@ -28,6 +28,7 @@ public class VariableSignalPosMap<T> {
 
   public void put(T blob, Point2D pos) {
     posMap.put(blob, pos);
+    consumedPoints.add(pos);
   }
 
   public Point2D getPos(T blob) {
@@ -44,6 +45,9 @@ public class VariableSignalPosMap<T> {
   }
 
   public BentPath getPath(Edge<T> torch) {
+    if (Objects.equals(torch.getStart(), torch.getEnd())) {
+      throw new IllegalArgumentException("No self loops allowed in the circuit");
+    }
     ensurePlaced(torch.getStart());
     ensurePlaced(torch.getEnd());
 

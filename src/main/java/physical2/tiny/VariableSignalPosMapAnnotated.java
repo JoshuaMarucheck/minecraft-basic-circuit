@@ -44,12 +44,12 @@ public class VariableSignalPosMapAnnotated extends VariableSignalPosMap<Integer>
 
       @Override
       public boolean hasNext() {
-        return i < circuit.getMultibitInputCount();
+        return i < circuit.getMultibitOutputCount();
       }
 
       @Override
       public Iterator<Integer> next() {
-        return circuit.getMultibitInput(i++);
+        return circuit.getMultibitOutput(i++);
       }
     }));
   }
