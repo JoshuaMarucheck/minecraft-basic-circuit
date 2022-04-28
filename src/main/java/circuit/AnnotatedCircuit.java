@@ -124,7 +124,7 @@ public class AnnotatedCircuit extends Circuit {
     }
 
     public boolean hasNext() {
-      return this.i > this.end;
+      return this.i < this.end;
     }
 
     public Integer next() {
