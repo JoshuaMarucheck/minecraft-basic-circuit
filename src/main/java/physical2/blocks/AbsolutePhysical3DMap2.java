@@ -76,6 +76,24 @@ public class AbsolutePhysical3DMap2 {
     }
   }
 
+  public void putInput(Point2D xy) {
+    putBlockRaw(
+        scale3.apply(new Point3D(xy.getX(), xy.getY(), 0)).translate(0, -1, -1),
+        BlockConstant.CIRCUIT_INPUT
+    );
+  }
+
+  public void putOutput(Point2D xy) {
+    putBlockRaw(
+        scale3.apply(new Point3D(xy.getX(), xy.getY(), maxZ())).translate(0, 0, 1),
+        BlockConstant.REDSTONE
+    );
+    putBlockRaw(
+        scale3.apply(new Point3D(xy.getX(), xy.getY(), maxZ())).translate(0, -1, 1),
+        BlockConstant.CIRCUIT_OUTPUT
+    );
+  }
+
   private static int mod(int a, int b) {
     int r = a % b;
     if (r < 0) {

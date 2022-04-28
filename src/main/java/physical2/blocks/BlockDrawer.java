@@ -35,10 +35,12 @@ public class BlockDrawer {
       for (Iterator<Point2D> it = ((VariableSignalPosMapAnnotated) varPosMap).inputPosIterator(); it.hasNext(); ) {
         Point2D input = it.next();
         blocks.putForwardSignal(input, Range.make(0, drawer.getZRange(input).getLower()));
+        blocks.putInput(input);
       }
       for (Iterator<Point2D> it = ((VariableSignalPosMapAnnotated) varPosMap).outputPosIterator(); it.hasNext(); ) {
         Point2D output = it.next();
         blocks.putForwardSignal(output, Range.make(drawer.getZRange(output).getUpper(), blocks.maxZ()));
+        blocks.putOutput(output);
       }
     }
   }
