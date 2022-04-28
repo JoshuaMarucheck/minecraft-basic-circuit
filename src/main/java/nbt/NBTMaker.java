@@ -4,12 +4,13 @@ import dev.dewy.nbt.Nbt;
 import dev.dewy.nbt.tags.collection.CompoundTag;
 import physical.things.BlockConstant;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Map;
 
 import static nbt.BlockIdConstants.blockIds;
-import static nbt.Constants.root;
+import static nbt.Constants.nbtRoot;
 
 public class NBTMaker {
   public static final Nbt NBT = new Nbt();
@@ -18,8 +19,8 @@ public class NBTMaker {
   /**
    * @param blocks Ordered XYZ
    */
-  public static CompoundTag toNbt(BlockConstant[][][] blocks) throws IOException {
-    CompoundTag tag = NBT.fromFile(Paths.get(root).getParent().resolve("nbt/base_tag.txt").toFile());
+  public static CompoundTag toNbt(BlockConstant[][][] blocks) throws IOException, SNBTParser.SNBTParseException {
+    CompoundTag tag = (CompoundTag) SNBTParser.fromFile(Paths.get(nbtRoot).resolve("base_tag.json").toFile());
 
     tag.putShort("Width", (short) blocks.length);
     tag.putShort("Height", (short) blocks[0].length);

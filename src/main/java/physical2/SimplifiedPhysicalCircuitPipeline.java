@@ -4,6 +4,7 @@ import circuit.AnnotatedCircuit;
 import circuit.preconstructed.CircuitCollection;
 import dev.dewy.nbt.tags.collection.CompoundTag;
 import nbt.NBTMaker;
+import nbt.SNBTParser;
 import physical2.blocks.BlockDrawer;
 import physical2.blocks.PathAccumulator;
 import physical2.tiny.DefaultLegalPositions;
@@ -22,7 +23,7 @@ import static nbt.NBTMaker.NBT;
  */
 public class SimplifiedPhysicalCircuitPipeline {
   public static void circuitToSchematic(CircuitCollection cc, String name) throws IOException {
-    circuitToSchematic(cc.get(name).trim(), Paths.get(root).getParent().resolve("schematic_out").resolve(name).toFile());
+    circuitToSchematic(cc.get(name).trim(), Paths.get(root).resolve("schematic_out").resolve(name).toFile());
   }
 
   public static void circuitToSchematic(AnnotatedCircuit circuit, File outFile) throws IOException {
@@ -37,7 +38,12 @@ public class SimplifiedPhysicalCircuitPipeline {
 
     PathAccumulator pathAccumulator = PathAccumulator.makeLinear(sigPosMap, circuit.getGraph());
     BlockDrawer blockDrawer = new BlockDrawer(pathAccumulator);
-    CompoundTag tag = NBTMaker.toNbt(blockDrawer.getBlocks());
+    CompoundTag tag;
+    try {
+      tag = NBTMaker.toNbt(blockDrawer.getBlocks());
+    } catch (SNBTParser.SNBTParseException e) {
+      throw new IOException("Invalid NBT tag", e);
+    }
     NBT.toFile(tag, outFile);
   }
 }

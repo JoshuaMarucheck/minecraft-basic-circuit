@@ -13,8 +13,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import static nbt.Constants.circuitRoot;
+
 public class LowLevelCircuitGenerator {
-  private static String root = "./src/main/resources/circuits/";
+
   private CircuitCollection circuitCollection;
   public final static LowLevelCircuitGenerator canonicalGenerator = new LowLevelCircuitGenerator();
 
@@ -29,7 +31,7 @@ public class LowLevelCircuitGenerator {
     cc.registerCircuit("and", and());
     cc.registerCircuit("or", or());
     try {
-      cc.loadFromFile(new File(root + "xor.txt"), true, true);
+      cc.loadFromFile(new File(circuitRoot + "xor.txt"), true, true);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -42,7 +44,7 @@ public class LowLevelCircuitGenerator {
 
     AnnotatedCircuit xor;
     try {
-      xor = circuitCollection.loadFromFile(new File(root + "xor.txt"), true, false);
+      xor = circuitCollection.loadFromFile(new File(circuitRoot + "xor.txt"), true, false);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -435,8 +437,8 @@ public class LowLevelCircuitGenerator {
     AnnotatedCircuit xor3;
     AnnotatedCircuit atLeast2;
     try {
-      xor3 = circuitCollection.getOrLoad(new File(root + "specialized/xor3.txt"));
-      atLeast2 = circuitCollection.getOrLoad(new File(root + "specialized/atLeast2.txt"));
+      xor3 = circuitCollection.getOrLoad(new File(circuitRoot + "specialized/xor3.txt"));
+      atLeast2 = circuitCollection.getOrLoad(new File(circuitRoot + "specialized/atLeast2.txt"));
     } catch (MissingCircuitDependencyException e) {
       throw new RuntimeException("Missing a basic logic gate somehow?", e);
     }

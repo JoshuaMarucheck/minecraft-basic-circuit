@@ -8,9 +8,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class DefaultCircuitTest {
-  private static String root = "./src/main/resources/circuits/";
+import static nbt.Constants.circuitRoot;
 
+public class DefaultCircuitTest {
   public static void main(String[] args) throws Exception {
     System.out.println("Constructing tests");
 
@@ -25,14 +25,14 @@ public class DefaultCircuitTest {
     cc4.registerCircuit("any4", LowLevelCircuitGenerator.any(4));
     cc4.registerCircuit("all4", LowLevelCircuitGenerator.all(4));
 
-    cc4.getOrLoad(new File(root + "specialized/xor3.txt"));
-    cc4.getOrLoad(new File(root + "specialized/atLeast2.txt"));
+    cc4.getOrLoad(new File(circuitRoot + "specialized/xor3.txt"));
+    cc4.getOrLoad(new File(circuitRoot + "specialized/atLeast2.txt"));
 
     CircuitCollection cc64 = LowLevelCircuitGenerator.defaultNamedCircuits();
     cc64.addAll(gen.operators(64));
 
-    cc64.getOrLoad(new File(root + "specialized/constant5.txt"));
-    cc64.getOrLoad(new File(root + "final/is_palindrome.txt"));
+    cc64.getOrLoad(new File(circuitRoot + "specialized/constant5.txt"));
+    cc64.getOrLoad(new File(circuitRoot + "final/is_palindrome.txt"));
 
     CircuitTestCollection[] ctcs = new CircuitTestCollection[]{
         new CircuitTestCollection(cc4, new CircuitTest[]{
