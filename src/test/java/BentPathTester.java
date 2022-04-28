@@ -8,6 +8,9 @@ public class BentPathTester {
     exhaust(new BentPath(new Point2D(0, 0), new Point2D(0, 0)).iterator());
     exhaust(new BentPath(new Point2D(0, 0), new Point2D(1, 0)).iterator());
     exhaust(new BentPath(new Point2D(0, 0), new Point2D(2, 0)).iterator());
+    exhaust(new BentPath(new Point2D(3, 1), new Point2D(2, 3)).iterator());
+
+    exhaust(new BentPath(new Point2D(0, 0), new Point2D(0, 1)).iterator(), true);
 
 
     exhaust(new BentPath(new Point2D(4, 46), new Point2D(8, 45)).iterator());
@@ -17,8 +20,18 @@ public class BentPathTester {
   }
 
   private static void exhaust(Iterator<?> iter) {
+    exhaust(iter, false);
+  }
+
+  private static void exhaust(Iterator<?> iter, boolean verbose) {
     while (iter.hasNext()) {
-      iter.next();
+      Object obj = iter.next();
+      if (verbose) {
+        System.out.println(obj);
+      }
+    }
+    if (verbose) {
+      System.out.println();
     }
   }
 }

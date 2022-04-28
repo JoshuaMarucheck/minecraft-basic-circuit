@@ -28,18 +28,22 @@ public class BentPath implements Iterable<Pair<Point2D, SquareSpecifier>> {
   private BiSide endSide;
 
   public BentPath(Point2D start, Point2D end) {
+    if (start.equals(end)) {
+      throw new IllegalArgumentException("Self-loops are not allowed in the circuit");
+    }
     this.start = start;
     this.end = end;
 
-    if (start.getX() < end.getX()) {
+    int xDiff = end.getX() - start.getX();
+    if (Math.abs(xDiff) <= 1) {
+      endSide = BiSide.LEFT;
+      startSide = BiSide.LEFT;
+    } else if (start.getX() < end.getX()) {
       startSide = BiSide.LEFT;
       endSide = BiSide.RIGHT;
     } else if (end.getX() < start.getX()) {
       endSide = BiSide.LEFT;
       startSide = BiSide.RIGHT;
-    } else {
-      endSide = BiSide.LEFT;
-      startSide = BiSide.LEFT;
     }
   }
 
@@ -54,6 +58,11 @@ public class BentPath implements Iterable<Pair<Point2D, SquareSpecifier>> {
   @Override
   public Iterator<Pair<Point2D, SquareSpecifier>> iterator() {
     return new RepeaterInserter();
+  }
+
+  @Override
+  public String toString() {
+    return "BentPath(" + start + " -> " + end + ")";
   }
 
   /**
@@ -148,17 +157,22 @@ public class BentPath implements Iterable<Pair<Point2D, SquareSpecifier>> {
           Point2D p = nextNext.getFirst();
           Side start = nextNext.getSecond().getFirst();
           Side end = nextNext.getSecond().getSecond();
-          Pair<Point2D, Pair<Side, Side>> item;
+          Pair<Point2D, Pair<Side, Side>> localNext;
           do {
-            item = iter.next();
-            if (end == item.getSecond().getFirst()) {
-              end = item.getSecond().getSecond();
+            localNext = iter.next();
+            if (p.equals(localNext.getFirst())) {
+              if (end != localNext.getSecond().getFirst()) {
+                throw new IllegalStateException("bug");
+              }
+              end = localNext.getSecond().getSecond();
+              nextDone = true;
             } else {
+              nextDone = false;
               break;
             }
           } while (iter.hasNext());
           next = new Pair<>(p, new Pair<>(start, end));
-          nextNext = item;
+          nextNext = localNext;
         } else {
           if (nextDone) {
             done = true;
@@ -193,9 +207,11 @@ public class BentPath implements Iterable<Pair<Point2D, SquareSpecifier>> {
     private ZoomedBentIterator iter;
     private EdgePoint prevEdge;
     boolean started;
+    boolean done;
 
     public BentIterator() {
       started = false;
+      done = false;
       iter = new ZoomedBentIterator(start, end);
       // iter really should have at least one item.
       prevEdge = EdgePoint.zoomOut(iter.next());
@@ -204,9 +220,11 @@ public class BentPath implements Iterable<Pair<Point2D, SquareSpecifier>> {
       }
     }
 
+    private boolean hasNextExceptLast() {return !started || iter.hasNext();}
+
     @Override
     public boolean hasNext() {
-      return !started || iter.hasNext();
+      return !done;
     }
 
     @Override
@@ -215,6 +233,21 @@ public class BentPath implements Iterable<Pair<Point2D, SquareSpecifier>> {
         // prevEdge is really our next edge
         started = true;
         return new Pair<>(prevEdge.getPoint(), new Pair<>(null, prevEdge.getSide()));
+      }
+      if (!hasNextExceptLast()) {
+        // We need to return the last thing
+        done = true;
+
+        EdgePoint ep;
+        if (prevEdge.getSide() == DOWN){
+         ep = prevEdge;
+        } else {
+          ep = prevEdge.altPointSide();
+          if (ep.getSide() != DOWN) {
+            throw new IllegalStateException("Path did not end on a horizontal tile edge");
+          }
+        }
+        return new Pair<>(ep.getPoint(), new Pair<>(ep.getSide(), null));
       }
 
       EdgePoint nextEdge = EdgePoint.zoomOut(iter.next());
