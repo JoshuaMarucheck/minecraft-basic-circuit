@@ -25,7 +25,7 @@ public class AbsolutePhysical3DMap2 {
 
     scale3 = offset.compose(p -> new Point3D(X_SCALE * p.getX(), mapY(p.getY()), mapZ(p.getZ())));
 
-    Point3D offsetUpper = scale3.apply(b.getUpper()).translate(3, Y_BUFFER, 0);
+    Point3D offsetUpper = scale3.apply(b.getUpper()).translate(X_BUFFER, Y_BUFFER, 0);
     blocks = new BlockConstant[offsetUpper.getX()][offsetUpper.getY()][offsetUpper.getZ()];
   }
 
@@ -74,12 +74,14 @@ public class AbsolutePhysical3DMap2 {
    */
   public void putPath(Integer z, BentPath bp) {
     Iterator<Pair<Point2D, Map<Point2D, BlockConstant>>> squares = new PairSecondIterator<>(bp.iterator(), SideMapping::iterateOverPath);
+
     for (; squares.hasNext(); ) {
       Pair<Point2D, Map<Point2D, BlockConstant>> pair = squares.next();
       Point2D p = pair.getFirst();
+      Point3D basePoint = scale3.apply(to3D(p, z));
       Map<Point2D, BlockConstant> square = pair.getSecond();
       for (Point2D localPos : square.keySet()) {
-        putBlock(to3D(p.add(localPos), z), square.get(localPos));
+        putBlockRaw(basePoint.translate(localPos.getX(), localPos.getY(), 0), square.get(localPos));
       }
     }
   }

@@ -2,6 +2,7 @@ package physical2.tiny;
 
 import circuit.Pair;
 import physical2.blocks.SquareSpecifier;
+import physical2.one.BiSide;
 import physical2.two.Point2D;
 import physical2.two.Side;
 
@@ -20,9 +21,26 @@ public class BentPath implements Iterable<Pair<Point2D, SquareSpecifier>> {
   private Point2D start;
   private Point2D end;
 
+  /**
+   * The side of the square which hold the given wire end, if any.
+   */
+  private BiSide startSide;
+  private BiSide endSide;
+
   public BentPath(Point2D start, Point2D end) {
     this.start = start;
     this.end = end;
+
+    if (start.getX() < end.getX()) {
+      startSide = BiSide.LEFT;
+      endSide = BiSide.RIGHT;
+    } else if (end.getX() < start.getX()) {
+      endSide = BiSide.LEFT;
+      startSide = BiSide.RIGHT;
+    } else {
+      endSide = BiSide.LEFT;
+      startSide = BiSide.LEFT;
+    }
   }
 
   public Point2D getStart() {
@@ -82,9 +100,19 @@ public class BentPath implements Iterable<Pair<Point2D, SquareSpecifier>> {
 
       Pair<Point2D, Pair<Side, Side>> pair = iter.next();
       Pair<Side, Side> sides = pair.getSecond();
-      SquareSpecifier spec = new SquareSpecifier(sides.getFirst(), sides.getSecond(), repeatIndex == 0);
+      SquareSpecifier spec = buildSquareSpec(sides.getFirst(), sides.getSecond(), repeatIndex == 0);
       return new Pair<>(pair.getFirst(), spec);
     }
+  }
+
+  private SquareSpecifier buildSquareSpec(Side first, Side second, boolean repeater) {
+    return new SquareSpecifier(
+        first,
+        second,
+        first == null ? startSide : null,
+        second == null ? endSide : null,
+        repeater
+    );
   }
 
   private class FilteredBentIterator implements Iterator<Pair<Point2D, Pair<Side, Side>>> {
@@ -233,7 +261,7 @@ public class BentPath implements Iterable<Pair<Point2D, SquareSpecifier>> {
    * <p>
    * This means that for all valid points, one value is even, and one value is odd.
    */
-  private static class ZoomedBentIterator implements Iterator<Point2D> {
+  private class ZoomedBentIterator implements Iterator<Point2D> {
     private Point2D pos;
     private Point2D zoomedEnd;
     boolean done;
@@ -244,8 +272,23 @@ public class BentPath implements Iterable<Pair<Point2D, SquareSpecifier>> {
     private Point2D primaryDirection;
     private Point2D secondaryDirection;
 
-    private static boolean onDiag(Point2D a) {
+    private boolean onDiag(Point2D a) {
       return (a.getX() + a.getY()) % 2 != 0;
+    }
+
+    /**
+     * @param p    A zoomed out point
+     * @param side The side which the wire extends out of p from
+     */
+    private Point2D pickPathEndpoint(Point2D p, BiSide side) {
+      switch (side) {
+        case LEFT:
+          return new EdgePoint(p, DOWN).zoomIn();
+        case RIGHT:
+          return new EdgePoint(p.translate(-1, 0), DOWN).zoomIn();
+        default:
+          throw new IllegalArgumentException();
+      }
     }
 
     /**
@@ -253,18 +296,9 @@ public class BentPath implements Iterable<Pair<Point2D, SquareSpecifier>> {
      */
     public ZoomedBentIterator(Point2D start, Point2D end) {
       done = false;
-      int zoomedOutXDiff = end.getX() - start.getX();
-      Point2D zoomedStart;
-      if (zoomedOutXDiff > 0) {
-        zoomedStart = new EdgePoint(start, DOWN).zoomIn();
-        zoomedEnd = new EdgePoint(end.translate(-1, 0), DOWN).zoomIn();
-      } else if (zoomedOutXDiff < 0) {
-        zoomedStart = new EdgePoint(start.translate(-1, 0), DOWN).zoomIn();
-        zoomedEnd = new EdgePoint(end, DOWN).zoomIn();
-      } else {
-        zoomedStart = new EdgePoint(start, DOWN).zoomIn();
-        zoomedEnd = new EdgePoint(end, DOWN).zoomIn();
-      }
+
+      Point2D zoomedStart = pickPathEndpoint(start, startSide);
+      zoomedEnd = pickPathEndpoint(end, endSide);
 
       pos = zoomedStart;
       if (Math.abs(zoomedEnd.getX() - zoomedStart.getX()) >= Math.abs(zoomedEnd.getY() - zoomedStart.getY())) {
@@ -278,10 +312,6 @@ public class BentPath implements Iterable<Pair<Point2D, SquareSpecifier>> {
     private boolean onDiagonal() {
       Point2D p = pos.subtract(zoomedEnd);
       return Math.abs(p.getX()) == Math.abs(p.getY());
-    }
-
-    private static int sign(int i) {
-      return i >= 0 ? 1 : -1;
     }
 
     @Override
@@ -332,5 +362,9 @@ public class BentPath implements Iterable<Pair<Point2D, SquareSpecifier>> {
       }
       return prevPos;
     }
+  }
+
+  private static int sign(int i) {
+    return i >= 0 ? 1 : -1;
   }
 }
