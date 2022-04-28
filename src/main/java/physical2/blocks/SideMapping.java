@@ -2,6 +2,7 @@ package physical2.blocks;
 
 import circuit.Pair;
 import physical.things.BlockConstant;
+import physical2.one.BiSide;
 import physical2.two.Point2D;
 
 import java.util.*;
@@ -13,113 +14,346 @@ import static physical2.two.Side.*;
  */
 
 public class SideMapping {
-  public static int X_SCALE = 5;
-  public static int Y_SCALE = 5;
+  public static final int X_SCALE = 5;
+  public static final int Y_SCALE = 5;
 
   /**
    * The amount of buffer needed at the top of the map to allow for redstone above the top mapped center points.
+   * 0 Indicates only including up through the wire
    */
-  public static int Y_BUFFER = 3;
+  public static final int Y_BUFFER = 3;
+  public static final int X_BUFFER = 6;
+//  public static final int
 
   private static Map<SquareSpecifier, Map<Point2D, BlockConstant>> singleMappings = defaultSingleMappings();
   private static Map<Pair<SquareSpecifier, SquareSpecifier>, Pair<Map<Point2D, BlockConstant>, Map<Point2D, BlockConstant>>> doubleMappings = defaultDoubleMappings();
 
   private static Map<SquareSpecifier, Map<Point2D, BlockConstant>> defaultSingleMappings() {
     Map<SquareSpecifier, Map<Point2D, BlockConstant>> r = new HashMap<>();
-    r.put(new SquareSpecifier(LEFT, RIGHT, false), parseStringMap(new String[]{
+    r.put(new SquareSpecifier(null, LEFT, BiSide.RIGHT, null, false), parseStringMap(new String[]{
+        "...*",
+        "ssss.",
+        "!    s.",
+        "     s"}
+    ));
+    r.put(new SquareSpecifier(null, RIGHT, BiSide.LEFT, null, false), parseStringMap(new String[]{
+        "  *...",
+        " .ssss",
+        "!.s",
+        "s"}
+    ));
+    r.put(new SquareSpecifier(LEFT, RIGHT, null, null, false), parseStringMap(new String[]{
         ".....",
         "sssss",
-        "",
         "!"}
     ));
-    r.put(new SquareSpecifier(LEFT, RIGHT, true), parseStringMap(new String[]{
+    r.put(new SquareSpecifier(LEFT, RIGHT, null, null, true), parseStringMap(new String[]{
         "..>..",
         "sssss",
-        "",
         "!"}
     ));
-    r.put(new SquareSpecifier(RIGHT, LEFT, false), parseStringMap(new String[]{
+    r.put(new SquareSpecifier(RIGHT, LEFT, null, null, false), parseStringMap(new String[]{
         ".....",
         "sssss",
-        "",
         "!"}
     ));
-    r.put(new SquareSpecifier(RIGHT, LEFT, true), parseStringMap(new String[]{
+    r.put(new SquareSpecifier(RIGHT, LEFT, null, null, true), parseStringMap(new String[]{
         "..<..",
         "sssss",
-        "",
         "!"}
     ));
-    r.put(new SquareSpecifier(LEFT, UP, false), parseStringMap(new String[]{
+    r.put(new SquareSpecifier(LEFT, UP, null, null, false), parseStringMap(new String[]{
+        "   .",
+        "~..s",
+        ".ss",
+        "s",
+        "!"}
+    ));
+    r.put(new SquareSpecifier(LEFT, UP, null, null, true), parseStringMap(new String[]{
+        "   .",
+        "  .s",
+        ".>s",
+        "ss",
+        "!"}
+    ));
+    r.put(new SquareSpecifier(UP, LEFT, null, null, false), parseStringMap(new String[]{
         " ~.s",
         "~.s",
         ".s",
         "s",
-        "",
         "!"}
     ));
-    r.put(new SquareSpecifier(UP, LEFT, false), parseStringMap(new String[]{
-        " ~.s",
-        "~.s",
-        ".s",
-        "s",
-        "",
-        "!"}
-    ));
-    r.put(new SquareSpecifier(RIGHT, UP, false), parseStringMap(new String[]{
+    r.put(new SquareSpecifier(RIGHT, UP, null, null, false), parseStringMap(new String[]{
+        "   .",
         "  .T",
-        "  s..~",
-        "   ss.",
-        "     s",
-        "",
+        "  s...",
+        "   sss",
         "!"}
     ));
-    r.put(new SquareSpecifier(RIGHT, UP, true), parseStringMap(new String[]{
-        "  .T",
-        "  s<.~",
-        "   ss.",
-        "     s",
-        "",
+    r.put(new SquareSpecifier(RIGHT, UP, null, null, true), parseStringMap(new String[]{
+        "   .",
+        "  .s ~",
+        "  s<..",
+        "   sss",
         "!"}
     ));
 
 
-    r.put(new SquareSpecifier(DOWN, LEFT, false), parseStringMap(new String[]{
-        ".~",
+    r.put(new SquareSpecifier(DOWN, LEFT, null, null, false), parseStringMap(new String[]{
+        ".",
         "s.~",
-        " s.~",
-        "!  T."}
+        "! s.~",
+        "  T."}
     ));
-    r.put(new SquareSpecifier(LEFT, DOWN, false), parseStringMap(new String[]{
+    r.put(new SquareSpecifier(LEFT, DOWN, null, null, false), parseStringMap(new String[]{
         "...p",
         "sssr",
-        "",
-        "!  ~."}
+        "!   ~",
+        "   ."}
     ));
-    r.put(new SquareSpecifier(LEFT, DOWN, true), parseStringMap(new String[]{
+    r.put(new SquareSpecifier(LEFT, DOWN, null, null, true), parseStringMap(new String[]{
         "...p",
         "sssr",
-        "",
-        "!  ~."}
+        "!   ~",
+        "   ."}
     ));
 
-    r.put(new SquareSpecifier(DOWN, RIGHT, false), parseStringMap(new String[]{
-        "   ~..",
-        "  ~.ss",
-        "  .T",
-        "!  T."}
+    r.put(new SquareSpecifier(DOWN, RIGHT, null, null, false), parseStringMap(new String[]{
+        "    ~.",
+        "  ~..s",
+        "!  .Ts",
+        "  T."}
     ));
-    r.put(new SquareSpecifier(RIGHT, DOWN, false), parseStringMap(new String[]{
+    r.put(new SquareSpecifier(RIGHT, DOWN, null, null, false), parseStringMap(new String[]{
+        "!   ~..",
+        "  ~.ss"}
+    ));
+    r.put(new SquareSpecifier(RIGHT, DOWN, null, null, true), parseStringMap(new String[]{
         "   p..",
         "   rss",
-        "",
-        "!  ~."}
+        "!   ~",
+        "  ~."}
     ));
-    r.put(new SquareSpecifier(RIGHT, DOWN, true), parseStringMap(new String[]{
+
+
+    r.put(new SquareSpecifier(null, DOWN, BiSide.LEFT, null, false), parseStringMap(new String[]{
+        "!..s}",
+        "ss ."}
+    ));
+    r.put(new SquareSpecifier(null, DOWN, BiSide.RIGHT, null, false), parseStringMap(new String[]{
+        "    .",
+        "!   {s.",
+        "   . s"}
+    ));
+    r.put(new SquareSpecifier(UP, DOWN, null, null, false), parseStringMap(new String[]{
+        "   .",
+        "   p",
+        "   r",
+        "  p",
+        "!  r",
+        "   ."}
+    ));
+    r.put(new SquareSpecifier(null, UP, BiSide.LEFT, null, false), parseStringMap(new String[]{
+        "   .",
+        "   s",
+        "   *",
+        "  .s",
+        "!..s",
+        "ss"}
+    ));
+    r.put(new SquareSpecifier(null, UP, BiSide.RIGHT, null, false), parseStringMap(new String[]{
+        "   .",
+        "   s",
+        "   *",
+        "   s.",
+        "!    s.",
+        "     s"}
+    ));
+
+
+    r.put(new SquareSpecifier(null, RIGHT, BiSide.RIGHT, null, false), parseStringMap(new String[]{
+        "   s..",
+        "   *ss",
+        "!   s..",
+        "    ss"}
+    ));
+
+    r.put(new SquareSpecifier(null, LEFT, BiSide.LEFT, null, false), parseStringMap(new String[]{
+        "..s",
+        "ss*",
+        "!..s",
+        "ss"}
+    ));
+
+    r.put(new SquareSpecifier(null, LEFT, BiSide.RIGHT, null, false), parseStringMap(new String[]{
+        "..*",
+        "sss.",
+        "!   s..",
+        "    ss"}
+    ));
+
+    r.put(new SquareSpecifier(null, RIGHT, BiSide.LEFT, null, false), parseStringMap(new String[]{
+        "   *..",
+        "  .sss",
+        "!..s",
+        "ss"}
+    ));
+
+    r.put(new SquareSpecifier(LEFT, null, null, BiSide.RIGHT, false), parseStringMap(new String[]{
+        "...",
+        "sss.",
+        "!   s..",
+        "    ss"}
+    ));
+    r.put(new SquareSpecifier(LEFT, null, null, BiSide.RIGHT, true), parseStringMap(new String[]{
+        ".>.",
+        "sss.",
+        "!   s..",
+        "    ss"}
+    ));
+
+
+    r.put(new SquareSpecifier(LEFT, null, null, BiSide.LEFT, false), parseStringMap(new String[]{
+        "..p",
+        "ssr",
+        "!..~",
+        "ss"}
+    ));
+    r.put(new SquareSpecifier(LEFT, null, null, BiSide.LEFT, true), parseStringMap(new String[]{
+        "..p",
+        "ssr",
+        "!..~",
+        "ss"}
+    ));
+
+
+    r.put(new SquareSpecifier(RIGHT, null, null, BiSide.RIGHT, false), parseStringMap(new String[]{
         "   p..",
         "   rss",
-        "",
-        "!  ~."}
+        "!   ~..",
+        "    ss"}
+    ));
+    r.put(new SquareSpecifier(RIGHT, null, null, BiSide.RIGHT, true), parseStringMap(new String[]{
+        "   p..",
+        "   rss",
+        "!   ~..",
+        "    ss"}
+    ));
+
+    r.put(new SquareSpecifier(RIGHT, null, null, BiSide.LEFT, false), parseStringMap(new String[]{
+        "   ...",
+        "  .sss",
+        "!..s",
+        "ss"}
+    ));
+    r.put(new SquareSpecifier(RIGHT, null, null, BiSide.LEFT, true), parseStringMap(new String[]{
+        "   .<.",
+        "  .sss",
+        "!..s",
+        "ss"}
+    ));
+
+    r.put(new SquareSpecifier(DOWN, UP, null, null, false), parseStringMap(new String[]{
+        "   .  ",
+        "   T. ",
+        "    T.",
+        "   ..s",
+        "!  .Ts",
+        "  T.  "}
+    ));
+    r.put(new SquareSpecifier(DOWN, UP, null, null, true), parseStringMap(new String[]{
+        "   .  ",
+        "   T. ",
+        "  .>s ",
+        "s.Ts  ",
+        "! s.   ",
+        "  T.  "}
+    ));
+
+    r.put(new SquareSpecifier(DOWN, null, null, BiSide.LEFT, false), parseStringMap(new String[]{
+        "!...",
+        "ssT."}
+    ));
+    r.put(new SquareSpecifier(DOWN, null, null, BiSide.LEFT, true), parseStringMap(new String[]{
+        "!.<.",
+        "ssT."}
+    ));
+
+
+    r.put(new SquareSpecifier(DOWN, null, null, BiSide.RIGHT, false), parseStringMap(new String[]{
+        "!   ~..",
+        "   .Ts"}
+    ));
+    r.put(new SquareSpecifier(DOWN, null, null, BiSide.RIGHT, true), parseStringMap(new String[]{
+        "   .>s",
+        "!  .Ts",
+        "  T. "}
+    ));
+
+    r.put(new SquareSpecifier(UP, null, null, BiSide.LEFT, false), parseStringMap(new String[]{
+        "  ~.",
+        "  .s",
+        "  p ",
+        "  r",
+        "!..",
+        "ss"}
+    ));
+    r.put(new SquareSpecifier(UP, null, null, BiSide.LEFT, true), parseStringMap(new String[]{
+        "  ~.",
+        "  .s",
+        "  p ",
+        "  r",
+        "!..",
+        "ss"}
+    ));
+
+    r.put(new SquareSpecifier(UP, null, null, BiSide.RIGHT, false), parseStringMap(new String[]{
+        "  ~.",
+        "  .s",
+        "  p ",
+        "  r",
+        "!   ...",
+        "   sss"}
+    ));
+    r.put(new SquareSpecifier(UP, null, null, BiSide.RIGHT, true), parseStringMap(new String[]{
+        "  ~.",
+        "  .s",
+        "  p ",
+        "  r",
+        "!   ...",
+        "   sss"}
+    ));
+
+
+    r.put(new SquareSpecifier(UP, RIGHT, null, null, false), parseStringMap(new String[]{
+        "   .  ",
+        "   s. ",
+        "    s.",
+        "     s",
+        "!"}
+    ));
+    r.put(new SquareSpecifier(UP, RIGHT, null, null, true), parseStringMap(new String[]{
+        "   .  ",
+        "   p  ",
+        "   r .",
+        "    .s",
+        "!    s"}
+    ));
+
+
+    r.put(new SquareSpecifier(UP, LEFT, null, null, false), parseStringMap(new String[]{
+        "   .",
+        " ..s",
+        ".ss",
+        "s",
+        "!"}
+    ));
+    r.put(new SquareSpecifier(UP, LEFT, null, null, true), parseStringMap(new String[]{
+        "   .",
+        "   p",
+        "..~r",
+        "ss.",
+        "! s"}
     ));
 
     return r;
@@ -140,8 +374,14 @@ public class SideMapping {
         "     s",
         "!"
     }));
-    r.put(new Pair<>(new SquareSpecifier(LEFT, DOWN, false), new SquareSpecifier(UP, RIGHT, false)), diag1);
-    r.put(new Pair<>(new SquareSpecifier(RIGHT, UP, false), new SquareSpecifier(DOWN, LEFT, false)), diag1);
+    r.put(new Pair<>(
+        new SquareSpecifier(LEFT, DOWN, null, null, false),
+        new SquareSpecifier(UP, RIGHT, null, null, false)
+    ), diag1);
+    r.put(new Pair<>(
+        new SquareSpecifier(RIGHT, UP, null, null, false),
+        new SquareSpecifier(DOWN, LEFT, null, null, false)
+    ), diag1.swap());
 
 
     Pair<Map<Point2D, BlockConstant>, Map<Point2D, BlockConstant>> diag2 = new Pair<>(parseStringMap(new String[]{
@@ -155,9 +395,75 @@ public class SideMapping {
         "s",
         "!"
     }));
-    r.put(new Pair<>(new SquareSpecifier(RIGHT, DOWN, false), new SquareSpecifier(UP, LEFT, false)), diag2);
-    r.put(new Pair<>(new SquareSpecifier(LEFT, UP, false), new SquareSpecifier(DOWN, RIGHT, false)), diag2);
+    r.put(new Pair<>(
+        new SquareSpecifier(RIGHT, DOWN, null, null, false),
+        new SquareSpecifier(UP, LEFT, null, null, false)
+    ), diag2);
+    r.put(new Pair<>(
+        new SquareSpecifier(LEFT, UP, null, null, false),
+        new SquareSpecifier(DOWN, RIGHT, null, null, false)
+    ), diag2.swap());
 
+
+    r.put(new Pair<>(
+            new SquareSpecifier(null, DOWN, BiSide.RIGHT, null, false),
+            new SquareSpecifier(UP, LEFT, null, null, false)
+        ),
+        new Pair<>(parseStringMap(new String[]{
+            "! ~...."
+        }), parseStringMap(new String[]{
+            " {ssss",
+            "~.",
+            ".s",
+            "s",
+            "!"
+        }))
+    );
+
+    r.put(new Pair<>(
+            new SquareSpecifier(null, DOWN, BiSide.LEFT, null, false),
+            new SquareSpecifier(UP, RIGHT, null, null, false)
+        ),
+        new Pair<>(parseStringMap(new String[]{
+            "!....~"
+        }), parseStringMap(new String[]{
+            "ssss}",
+            "    .",
+            "    s.",
+            "     s",
+            "!"
+        }))
+    );
+
+
+    r.put(new Pair<>(
+            new SquareSpecifier(LEFT, UP, null, null, false),
+            new SquareSpecifier(DOWN, null, null, BiSide.RIGHT, false)
+        ),
+        new Pair<>(parseStringMap(new String[]{
+            "!  ~...",
+        }), parseStringMap(new String[]{
+            " ~.sss",
+            "~.s",
+            ".s",
+            "s",
+            "!"
+        })).swap()
+    );
+    r.put(new Pair<>(
+            new SquareSpecifier(RIGHT, UP, null, null, false),
+            new SquareSpecifier(DOWN, null, null, BiSide.LEFT, false)
+        ),
+        new Pair<>(parseStringMap(new String[]{
+            "!...~",
+        }), parseStringMap(new String[]{
+            "sss.~",
+            "   s.~",
+            "    s.",
+            "     s",
+            "!"
+        })).swap()
+    );
 
     return r;
   }
@@ -208,6 +514,10 @@ public class SideMapping {
         return BlockConstant.DOWN_PISTON;
       case 'r':
         return BlockConstant.REDSTONE_BLOCK;
+      case '{':
+        return BlockConstant.REDSTONE_WALL_TORCH_RIGHT;
+      case '}':
+        return BlockConstant.REDSTONE_WALL_TORCH_LEFT;
       default:
         throw new IllegalArgumentException("Not a valid block character: '" + c + "'");
     }
