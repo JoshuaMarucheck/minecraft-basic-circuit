@@ -63,13 +63,18 @@ public class BlockIdConstants {
     r.put(BlockConstant.REDSTONE, "redstone_wire");
     r.put(BlockConstant.REDSTONE_BASE, "stone");
     r.put(BlockConstant.EMPTY, "air");
-    r.put(BlockConstant.DOWN_PISTON, "piston[facing=down]");
+    r.put(BlockConstant.DOWN_PISTON, "sticky_piston[facing=down]");
     r.put(BlockConstant.REDSTONE_BLOCK, "redstone_block");
-    r.put(BlockConstant.REPEATER_X, "piston[facing=west]");
-    r.put(BlockConstant.REPEATER_X_, "piston[facing=east]");
-    r.put(BlockConstant.REPEATER_Z, "piston[facing=south]");
-    r.put(BlockConstant.REPEATER_Z_, "piston[facing=north]");
+    r.put(BlockConstant.REPEATER_X, "repeater[facing=west]");
+    r.put(BlockConstant.REPEATER_X_, "repeater[facing=east]");
+    r.put(BlockConstant.REPEATER_Z, "repeater[facing=north]");
+    r.put(BlockConstant.REPEATER_Z_, "repeater[facing=south]");
     r.put(BlockConstant.TOP_SLAB, "stone_slab[type=top]");
+    r.put(BlockConstant.CIRCUIT_INPUT, "lever[face=wall,facing=north]");
+    r.put(BlockConstant.CIRCUIT_OUTPUT, "redstone_lamp");
+    r.put(BlockConstant.ERROR, "gilded_blackstone");
+    r.put(BlockConstant.REDSTONE_WALL_TORCH_RIGHT, "redstone_wall_torch[facing=west]");
+    r.put(BlockConstant.REDSTONE_WALL_TORCH_LEFT, "redstone_wall_torch[facing=east]");
     return r;
   }
 }
