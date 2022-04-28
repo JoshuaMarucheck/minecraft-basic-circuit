@@ -1,21 +1,8 @@
 {
-  "Materials": "Alpha",
   "Entities": [],
   "TileEntities": [],
-  "Cubical": {
-    "Version": "1.2.8",
-    "File": {
-      "Name": "hi",
-      "Author": "Guest",
-      "Created": "2020-10-13T11:12:41.409Z"
-    },
-    "Player": {
-      "X": 64.0d,
-      "Y": 152.11244292557237d,
-      "Z": 191.43392219277877d,
-      "Yaw": 360.0d,
-      "Pitch": -53.83984516755637d,
-      "Flying": 1b
-    }
-  }
+  "Version": 2,
+  "BlockEntities": [
+  ],
+  "DataVersion": 2975
 }

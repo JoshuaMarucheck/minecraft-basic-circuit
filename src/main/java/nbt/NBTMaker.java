@@ -3,6 +3,7 @@ package nbt;
 import dev.dewy.nbt.Nbt;
 import dev.dewy.nbt.io.CompressionType;
 import dev.dewy.nbt.tags.collection.CompoundTag;
+import dev.dewy.nbt.tags.primitive.IntTag;
 import physical.things.BlockConstant;
 
 import java.io.File;
@@ -10,7 +11,8 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Map;
 
-import static nbt.BlockIdConstants.blockIds;
+import static nbt.BlockIdConstants.palette;
+import static nbt.BlockIdConstants.paletteSize;
 import static nbt.Constants.nbtRoot;
 
 public class NBTMaker {
@@ -27,7 +29,8 @@ public class NBTMaker {
     tag.putShort("Height", (short) blocks[0].length);
     tag.putShort("Length", (short) blocks[0][0].length);
 
-    tag.putByteArray("Blocks", flatten(blocks, blockIds));
+    tag.putByteArray("Blocks", flatten(blocks, palette));
+    tag.put(paletteSize);
 
     return tag;
   }
@@ -35,7 +38,7 @@ public class NBTMaker {
   /**
    * @param blocks Ordered XYZ, where we need YZX
    */
-  private static byte[] flatten(BlockConstant[][][] blocks, Map<BlockConstant, Byte> blockIds) {
+  private static byte[] flatten(BlockConstant[][][] blocks, Map<BlockConstant, Byte> palette) {
     int xWidth = blocks.length;
     int yWidth = blocks[0].length;
     int zWidth = blocks[0][0].length;
@@ -50,7 +53,7 @@ public class NBTMaker {
           if (bc == null) {
             bc = BlockConstant.EMPTY;
           }
-          Byte id = blockIds.get(bc);
+          Byte id = palette.get(bc);
           if (id == null) {
             throw new IllegalArgumentException("BlockConstant without id: " + blocks[x][y][z]);
           }

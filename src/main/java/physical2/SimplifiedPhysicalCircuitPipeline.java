@@ -21,11 +21,11 @@ import static nbt.Constants.root;
  * Creates a not space efficient redstone setup representing the given circuit.
  */
 public class SimplifiedPhysicalCircuitPipeline {
-  public static void circuitToSchematic(CircuitCollection cc, String name) throws IOException {
-    circuitToSchematic(cc.get(name).trim(), Paths.get(root).resolve("schematic").resolve(name).toFile());
+  public static void circuitToSchematic(CircuitCollection cc, String name, boolean verbose) throws IOException {
+    circuitToSchematic(cc.get(name).trim(), Paths.get(root).resolve("schematic").resolve(name + ".schematic").toFile(), verbose);
   }
 
-  public static void circuitToSchematic(AnnotatedCircuit circuit, File outFile) throws IOException {
+  public static void circuitToSchematic(AnnotatedCircuit circuit, File outFile, boolean verbose) throws IOException {
     VariableSignalPosMapAnnotated sigPosMap = new VariableSignalPosMapAnnotated(circuit, new DefaultLegalPositions());
 
     for (int i = 0; i < circuit.getMultibitInputCount(); i++) {
@@ -35,14 +35,24 @@ public class SimplifiedPhysicalCircuitPipeline {
       sigPosMap.placeOutput(i, new XIter(0, i + circuit.getMultibitInputCount()));
     }
 
+    print("Accumulating path", verbose);
     PathAccumulator pathAccumulator = PathAccumulator.makeLinear(sigPosMap, circuit.getGraph());
+    print("Drawing blocks", verbose);
     BlockDrawer blockDrawer = new BlockDrawer(pathAccumulator);
+    print("Building tag", verbose);
     CompoundTag tag;
     try {
       tag = NBTMaker.toNbt(blockDrawer.getBlocks());
     } catch (SNBTParser.SNBTParseException e) {
       throw new IOException("Invalid NBT tag", e);
     }
+    print("Writing to file", verbose);
     NBTMaker.toFile(tag, outFile);
+  }
+
+  private static void print(String s, boolean verbose) {
+    if (verbose) {
+      System.out.println(s);
+    }
   }
 }

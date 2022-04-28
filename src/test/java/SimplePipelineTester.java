@@ -14,6 +14,6 @@ public class SimplePipelineTester {
 
     cc64.getOrLoad(new File(circuitRoot + "final/is_palindrome.txt"));
 
-    circuitToSchematic(cc64, "is_palindrome");
+    circuitToSchematic(cc64, "is_palindrome", true);
   }
 }
