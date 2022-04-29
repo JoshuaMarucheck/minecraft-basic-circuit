@@ -31,7 +31,8 @@ public class AbsolutePhysical3DMap2 {
     validPositions = b;
     Offset offset = new Offset(b.getLower().negate());
 
-    scale3 = offset.compose(p -> new Point3D(X_SCALE * p.getX(), mapY(p.getY()), mapZ(p.getZ())));
+    Function<Point3D, Point3D> simpleScale = p -> new Point3D(X_SCALE * p.getX(), mapY(p.getY()), mapZ(p.getZ()));
+    scale3 = simpleScale.compose(offset);
 
     Point3D offsetUpper = scale3.apply(b.getUpper()).translate(X_BUFFER, Y_BUFFER, 0);
     // Translate by 1 in each direction to capture the outermost edge
