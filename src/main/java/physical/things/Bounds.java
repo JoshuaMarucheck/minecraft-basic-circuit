@@ -64,7 +64,7 @@ public class Bounds implements Bounded, Iterable<Point3D> {
   }
 
   public Point3D size() {
-    return new Point3D(hi.getX() - lo.getX(), hi.getY() - lo.getY(), hi.getZ() - lo.getZ());
+    return new Point3D(hi.getX() - lo.getX() + 1, hi.getY() - lo.getY() + 1, hi.getZ() - lo.getZ() + 1);
   }
 
   private class InteriorIterator implements Iterator<Point3D> {
