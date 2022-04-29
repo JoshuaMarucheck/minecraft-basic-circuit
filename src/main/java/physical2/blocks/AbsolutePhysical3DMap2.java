@@ -71,7 +71,7 @@ public class AbsolutePhysical3DMap2 {
     Point3D hi = scale3.apply(new Point3D(xy.getX(), xy.getY(), zRange.getUpper()));
 
     for (int z = lo.getZ(); z < hi.getZ(); z++) {
-      BlockConstant redstone = mod(z, 16) == 14 ? BlockConstant.REPEATER_Z : BlockConstant.REDSTONE;
+      BlockConstant redstone = mod(z, 8) == 6 ? BlockConstant.REPEATER_Z : BlockConstant.REDSTONE;
       putBlockRaw(new Point3D(lo.getX(), lo.getY(), z), redstone);
       putBlockRaw(new Point3D(lo.getX(), lo.getY() - 1, z), BlockConstant.REDSTONE_BASE);
     }

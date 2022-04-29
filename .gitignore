@@ -1,4 +1,5 @@
 .DS_Store
+src/main/resources/schematic/
 
 # Compiled class file
 *.class

@@ -228,7 +228,17 @@ public class SchematicFiller {
   }
 
   private static String toRelativeCoordString(Point3D p) {
-    return "~" + p.getX() + " ~" + p.getY() + " ~" + p.getZ();
+    return "~" + intToStr(p.getX())
+        + " ~" + intToStr(p.getY())
+        + " ~" + intToStr(p.getZ());
+  }
+
+  private static String intToStr(int i) {
+    if (i == 0) {
+      return "";
+    } else {
+      return String.valueOf(i);
+    }
   }
 
   private void runCommand(String s) {
