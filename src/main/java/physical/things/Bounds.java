@@ -237,4 +237,9 @@ public class Bounds implements Bounded, Iterable<Point3D> {
   public Bounds bounds() {
     return this;
   }
+
+  @Override
+  public String toString() {
+    return "Bounds(" + lo + ", " + hi + ")";
+  }
 }
