@@ -5,6 +5,7 @@ import circuit.preconstructed.CircuitCollection;
 import dev.dewy.nbt.tags.collection.CompoundTag;
 import nbt.NBTMaker;
 import nbt.SNBTParser;
+import physical.things.Point3D;
 import physical2.blocks.BlockDrawer;
 import physical2.blocks.PathAccumulator;
 import physical2.tiny.DefaultLegalPositions;
@@ -13,16 +14,21 @@ import physical2.tiny.XIter;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 
 import static nbt.Constants.root;
+import static physical2.SchematicSplitter.MAX_SIZE;
 
 /**
  * Creates a not space efficient redstone setup representing the given circuit.
  */
 public class SimplifiedPhysicalCircuitPipeline {
+  private final static String fileExtension = "schematic";
+
   public static void circuitToSchematic(CircuitCollection cc, String name, boolean verbose) throws IOException {
-    circuitToSchematic(cc.get(name).trim(), Paths.get(root).resolve("schematic").resolve(name + ".schematic").toFile(), verbose);
+    circuitToSchematic(cc.get(name).trim(), Paths.get(root).resolve("schematic").resolve(name + "." + fileExtension).toFile(), verbose);
   }
 
   public static void circuitToSchematic(AnnotatedCircuit circuit, File outFile, boolean verbose) throws IOException {
@@ -41,14 +47,27 @@ public class SimplifiedPhysicalCircuitPipeline {
     BlockDrawer blockDrawer = new BlockDrawer(pathAccumulator);
     print("Size: " + blockDrawer.size(), verbose);
     print("Building tag", verbose);
-    CompoundTag tag;
+    Map<Point3D, CompoundTag> tags;
     try {
-      tag = NBTMaker.toNbt(blockDrawer.getBlocks());
+      tags = SchematicSplitter.makeTags(blockDrawer);
     } catch (SNBTParser.SNBTParseException e) {
       throw new IOException("Invalid NBT tag", e);
     }
-    print("Writing to file", verbose);
-    NBTMaker.toFile(tag, outFile);
+    if (tags.size() == 1) {
+      print("Writing to file", verbose);
+      NBTMaker.toFile(tags.get(tags.keySet().iterator().next()), outFile);
+    } else {
+      print("Too big for one file; splitting into " + tags.size() + " labelled files in shape " + SchematicSplitter.size(blockDrawer) + " with skip size " + MAX_SIZE, verbose);
+      int dot = outFile.getName().lastIndexOf('.');
+      String filePrefix = outFile.getName().substring(0, dot);
+      Path parent = outFile.toPath().getParent().resolve(filePrefix);
+      parent.toFile().mkdir();
+      for (Point3D pos : tags.keySet()) {
+        String fileName = pos + "." + fileExtension;
+        File file = parent.resolve(fileName).toFile();
+        NBTMaker.toFile(tags.get(pos), file);
+      }
+    }
   }
 
   private static void print(String s, boolean verbose) {
