@@ -239,15 +239,15 @@ public class SchematicFiller {
 
   private static class FileComparator implements Comparator<File> {
     // Do lower schematics first
-    // Also, since schematics are pasted one +x from where you are (and it fills your target teleport with air), do the positive x ones first.
+    // Also, since schematics are pasted one +z from where you are (and it fills your target teleport with air), do the positive z ones first.
     @Override
     public int compare(File o1, File o2) {
       int yDiff = parsePoint(o1.getName()).getY() - parsePoint(o2.getName()).getY();
       if (yDiff != 0) {
         return yDiff;
       } else {
-        // Inverted order since large x should go first
-        return parsePoint(o2.getName()).getX() - parsePoint(o1.getName()).getX();
+        // Inverted order since large z should go first
+        return parsePoint(o2.getName()).getZ() - parsePoint(o1.getName()).getZ();
       }
     }
   }
