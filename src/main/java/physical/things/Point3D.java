@@ -64,6 +64,10 @@ public class Point3D {
     return new AdjIter(6);
   }
 
+  public Point3D translate(Point3D p) {
+    return this.translate(p.getX(), p.getY(), p.getZ());
+  }
+
   private class AdjIter implements Iterator<Point3D> {
     private int i;
     private int limit;
@@ -123,5 +127,9 @@ public class Point3D {
 
   public String toString() {
     return "(" + x + ", " + y + ", " + z + ")";
+  }
+
+  public String toStringWithoutSpaces() {
+    return "(" + x + "," + y + "," + z + ")";
   }
 }

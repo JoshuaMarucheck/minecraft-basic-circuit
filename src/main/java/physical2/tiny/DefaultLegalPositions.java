@@ -25,7 +25,7 @@ public class DefaultLegalPositions implements Iterable<Point2D> {
     }
   }
 
-  private static final int WORLD_HEIGHT = 256;
+  public static final int WORLD_HEIGHT = 256;
 
   @Override
   public Iterator<Point2D> iterator() {
