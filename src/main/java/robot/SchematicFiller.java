@@ -168,9 +168,9 @@ public class SchematicFiller {
       throw new IllegalArgumentException("Not a parseable Point3D: \"" + fileName + "\"");
     }
 
-    items[0] = expectWrapping(items[0], "(", "", true);
+    items[0] = removeWhitespace(items[0]);
     items[1] = removeWhitespace(items[1]);
-    items[2] = expectWrapping(items[2], "", ")", true);
+    items[2] = removeWhitespace(items[2]);
 
     return new Point3D(
         Integer.parseInt(items[0]),
@@ -184,10 +184,10 @@ public class SchematicFiller {
       s = removeWhitespace(s);
     }
     if (!s.startsWith(prefix)) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException("\"" + s + "\" does not start with \"" + prefix + "\"");
     }
     if (!s.endsWith(suffix)) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException("\"" + s + "\" does not end with \"" + suffix + "\"");
     }
     s = s.substring(prefix.length(), s.length() - suffix.length());
     if (ignoreWhitespace) {

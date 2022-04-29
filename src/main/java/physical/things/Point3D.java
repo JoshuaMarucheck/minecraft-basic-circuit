@@ -130,6 +130,6 @@ public class Point3D {
   }
 
   public String toStringWithoutSpaces() {
-    return "(" + x + "," + y + "," + z + ")";
+    return x + "," + y + "," + z;
   }
 }
