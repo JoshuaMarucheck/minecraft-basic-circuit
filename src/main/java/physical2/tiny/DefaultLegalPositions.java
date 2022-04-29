@@ -1,5 +1,6 @@
 package physical2.tiny;
 
+import misc.SettingsConstants;
 import physical2.two.Point2D;
 
 import java.util.HashSet;
@@ -16,7 +17,7 @@ public class DefaultLegalPositions implements Iterable<Point2D> {
   public static void main(String[] args) {
     Set<Point2D> points = new HashSet<>();
     Iterator<Point2D> iter = new DefaultLegalPositions().iterator();
-    for (int i = 0; i < WORLD_HEIGHT * WORLD_HEIGHT; i++) {
+    for (int i = 0; i < SettingsConstants.WORLD_HEIGHT * SettingsConstants.WORLD_HEIGHT; i++) {
       Point2D p = iter.next();
       if (points.contains(p)) {
         throw new IllegalStateException("Duplicate point " + p + " given");
@@ -24,8 +25,6 @@ public class DefaultLegalPositions implements Iterable<Point2D> {
       points.add(p);
     }
   }
-
-  public static final int WORLD_HEIGHT = 256;
 
   @Override
   public Iterator<Point2D> iterator() {
@@ -59,7 +58,7 @@ public class DefaultLegalPositions implements Iterable<Point2D> {
         }
       } else {
         y++;
-        if (mapY(y) + Y_BUFFER >= WORLD_HEIGHT) {
+        if (mapY(y) + Y_BUFFER >= SettingsConstants.WORLD_HEIGHT) {
           y = 0;
           x++;
         }

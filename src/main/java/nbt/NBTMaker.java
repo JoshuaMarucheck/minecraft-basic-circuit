@@ -13,7 +13,7 @@ import java.nio.file.Paths;
 import java.util.Map;
 
 import static nbt.BlockIdConstants.*;
-import static nbt.Constants.nbtRoot;
+import static misc.SettingsConstants.nbtRoot;
 
 public class NBTMaker {
   public static final Nbt NBT = new Nbt();

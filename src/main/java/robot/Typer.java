@@ -9,10 +9,6 @@ import java.io.IOException;
 import static java.awt.event.KeyEvent.*;
 
 public class Typer {
-  /**
-   * The number of milliseconds to wait after pressing or releasing a key.
-   */
-  public static final int KEY_PRESS_PAUSE = 50;
   private static final WaitTarget waitTarget = new WaitTarget();
   private static final WaitTarget copyWaitTarget = new WaitTarget();
   private static final int copyKey = VK_META;//System.getProperty("os.name").toLowerCase().contains("win") ? VK_CONTROL : VK_META;

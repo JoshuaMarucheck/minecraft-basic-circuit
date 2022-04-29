@@ -1,6 +1,6 @@
 package robot;
 
-import static robot.Typer.KEY_PRESS_PAUSE;
+import static misc.SettingsConstants.KEY_PRESS_PAUSE;
 
 public class WaitTarget {
   private volatile boolean waiting;

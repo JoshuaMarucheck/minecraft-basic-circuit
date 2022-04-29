@@ -8,7 +8,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import static nbt.Constants.circuitRoot;
+import static misc.SettingsConstants.circuitRoot;
 
 public class DefaultCircuitTest {
   public static void main(String[] args) throws Exception {

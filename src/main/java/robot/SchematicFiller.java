@@ -10,7 +10,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Comparator;
 
-import static physical2.tiny.DefaultLegalPositions.WORLD_HEIGHT;
+import static misc.SettingsConstants.WORLD_HEIGHT;
 
 public class SchematicFiller {
   private Point3D pos;

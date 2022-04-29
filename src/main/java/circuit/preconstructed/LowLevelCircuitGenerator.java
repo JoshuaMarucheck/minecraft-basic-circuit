@@ -13,7 +13,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import static nbt.Constants.circuitRoot;
+import static misc.SettingsConstants.circuitRoot;
 
 public class LowLevelCircuitGenerator {
 

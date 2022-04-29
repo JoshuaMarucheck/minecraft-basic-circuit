@@ -1,6 +1,7 @@
 package physical2;
 
 import dev.dewy.nbt.tags.collection.CompoundTag;
+import misc.SettingsConstants;
 import nbt.NBTMaker;
 import nbt.SNBTParser;
 import physical.things.Bounds;
@@ -14,8 +15,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 public class SchematicSplitter {
-  public final static int MAX_SIZE = 32;
-  private final static Function<Point3D, Point3D> scaleSize = new Scale(MAX_SIZE);
+  private final static Function<Point3D, Point3D> scaleSize = new Scale(SettingsConstants.SCHEMATIC_WIDTH_LIMIT);
 
   /**
    * @return map from position zoomed out to Pair(size, tag)
@@ -42,10 +42,10 @@ public class SchematicSplitter {
 
   public static Point3D size(BlockDrawer blockDrawer) {
     Point3D upper = blockDrawer.size();
-    return new Point3D(upper.getX() / MAX_SIZE, upper.getY() / MAX_SIZE, upper.getZ() / MAX_SIZE);
+    return new Point3D(upper.getX() / SettingsConstants.SCHEMATIC_WIDTH_LIMIT, upper.getY() / SettingsConstants.SCHEMATIC_WIDTH_LIMIT, upper.getZ() / SettingsConstants.SCHEMATIC_WIDTH_LIMIT);
   }
 
   private static boolean tooBig(Point3D upperBound) {
-    return upperBound.getX() >= MAX_SIZE || upperBound.getY() >= MAX_SIZE || upperBound.getZ() >= MAX_SIZE;
+    return upperBound.getX() >= SettingsConstants.SCHEMATIC_WIDTH_LIMIT || upperBound.getY() >= SettingsConstants.SCHEMATIC_WIDTH_LIMIT || upperBound.getZ() >= SettingsConstants.SCHEMATIC_WIDTH_LIMIT;
   }
 }

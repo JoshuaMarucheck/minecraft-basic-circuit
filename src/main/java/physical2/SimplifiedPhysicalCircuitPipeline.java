@@ -18,8 +18,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 
-import static nbt.Constants.root;
-import static physical2.SchematicSplitter.MAX_SIZE;
+import static misc.SettingsConstants.root;
+import static misc.SettingsConstants.SCHEMATIC_WIDTH_LIMIT;
 
 /**
  * Creates a not space efficient redstone setup representing the given circuit.
@@ -57,7 +57,7 @@ public class SimplifiedPhysicalCircuitPipeline {
       print("Writing to file", verbose);
       NBTMaker.toFile(tags.get(tags.keySet().iterator().next()), outFile);
     } else {
-      print("Too big for one file; splitting into " + tags.size() + " labelled files in shape " + SchematicSplitter.size(blockDrawer) + " with skip size " + MAX_SIZE, verbose);
+      print("Too big for one file; splitting into " + tags.size() + " labelled files in shape " + SchematicSplitter.size(blockDrawer) + " with skip size " + SCHEMATIC_WIDTH_LIMIT, verbose);
       int dot = outFile.getName().lastIndexOf('.');
       String filePrefix = outFile.getName().substring(0, dot);
       Path parent = outFile.toPath().getParent().resolve(filePrefix);
