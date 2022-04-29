@@ -153,6 +153,14 @@ public class SideMapping {
         "!  r",
         "   ."}
     ));
+    r.put(new SquareSpecifier(UP, DOWN, null, null, true), parseStringMap(new String[]{
+        "   .",
+        "   p",
+        "   r",
+        "  p",
+        "!  r",
+        "   ."}
+    ));
     r.put(new SquareSpecifier(null, UP, BiSide.LEFT, null, false), parseStringMap(new String[]{
         "   .",
         "   s",
@@ -267,6 +275,39 @@ public class SideMapping {
         "  .>s ",
         "s.Ts  ",
         "! s.   ",
+        "  T.  "}
+    ));
+
+    r.put(new SquareSpecifier(DOWN, LEFT, null, null, false), parseStringMap(new String[]{
+        "",
+        "",
+        ".",
+        "s.",
+        "! s.",
+        "  T."}
+    ));
+    r.put(new SquareSpecifier(DOWN, LEFT, null, null, true), parseStringMap(new String[]{
+        "",
+        "",
+        ".<.",
+        "ssT.",
+        "!  .T",
+        "  T."}
+    ));
+
+
+    r.put(new SquareSpecifier(DOWN, RIGHT, null, null, false), parseStringMap(new String[]{
+        "    ..",
+        "   .ss",
+        "!  .T  ",
+        "  T.  "}
+    ));
+    r.put(new SquareSpecifier(DOWN, RIGHT, null, null, true), parseStringMap(new String[]{
+        " s}.  ",
+        "~* s. ",
+        " s.~s.",
+        "  T. s",
+        "!  .T  ",
         "  T.  "}
     ));
 
