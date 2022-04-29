@@ -21,6 +21,7 @@ public class NBTMaker {
 
   /**
    * @param blocks Ordered XYZ
+   * @return {@code null} if the specified range has no blocks other than {@code BlockConstant.EMPTY}
    */
   public static CompoundTag subrangeToNbt(BlockConstant[][][] blocks, Bounds b) throws IOException, SNBTParser.SNBTParseException {
     CompoundTag tag = baseTag();
@@ -63,6 +64,9 @@ public class NBTMaker {
     return tag;
   }
 
+  /**
+   * @param blocks Ordered XYZ, where we need YZX
+   */
   private static byte[] flattenSubrange(BlockConstant[][][] blocks, Bounds b, Map<BlockConstant, Byte> palette) {
     int xLo = b.getLower().getX();
     int yLo = b.getLower().getY();
@@ -78,12 +82,16 @@ public class NBTMaker {
     byte[] r = new byte[xWidth * yWidth * zWidth];
     int i = 0;
 
+    boolean hasContent = false;
     for (int y = yLo; y < yHi; y++) {
       for (int z = zLo; z < zHi; z++) {
         for (int x = xLo; x < xHi; x++) {
           BlockConstant bc = blocks[x][y][z];
           if (bc == null) {
             bc = BlockConstant.EMPTY;
+          }
+          if (bc != BlockConstant.EMPTY) {
+            hasContent = true;
           }
           Byte id = palette.get(bc);
           if (id == null) {
@@ -94,7 +102,11 @@ public class NBTMaker {
       }
     }
 
-    return r;
+    if (hasContent) {
+      return r;
+    } else {
+      return null;
+    }
   }
 
   /**

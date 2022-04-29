@@ -63,7 +63,7 @@ public class SimplifiedPhysicalCircuitPipeline {
       Path parent = outFile.toPath().getParent().resolve(filePrefix);
       parent.toFile().mkdir();
       for (Point3D pos : tags.keySet()) {
-        String fileName = pos + "." + fileExtension;
+        String fileName = pos.toStringWithoutSpaces() + "." + fileExtension;
         File file = parent.resolve(fileName).toFile();
         NBTMaker.toFile(tags.get(pos), file);
       }

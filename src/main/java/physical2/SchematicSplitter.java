@@ -29,7 +29,10 @@ public class SchematicSplitter {
       for (Point3D p : zoomedOutPointBounds) {
         Bounds b = Bounds.make(scaleSize.apply(p), scaleSize.apply(p.translate(1, 1, 1)).translate(-1, -1, -1));
         b = Bounds.restrict(b, arrayBounds);
-        r.put(p, NBTMaker.subrangeToNbt(blockDrawer.getBlocks(), b));
+        CompoundTag tag = NBTMaker.subrangeToNbt(blockDrawer.getBlocks(), b);
+        if (tag != null) {
+          r.put(p, tag);
+        }
       }
     } else {
       r.put(new Point3D(0, 0, 0), NBTMaker.toNbt(blockDrawer.getBlocks()));
