@@ -109,7 +109,7 @@ public class BentPath implements Iterable<Pair<Point2D, SquareSpecifier>> {
 
       Pair<Point2D, Pair<Side, Side>> pair = iter.next();
       Pair<Side, Side> sides = pair.getSecond();
-      SquareSpecifier spec = buildSquareSpec(sides.getFirst(), sides.getSecond(), repeatIndex == 0);
+      SquareSpecifier spec = buildSquareSpec(sides.getFirst(), sides.getSecond(), repeatIndex == 0 || sides.getSecond() == null);
       return new Pair<>(pair.getFirst(), spec);
     }
   }
