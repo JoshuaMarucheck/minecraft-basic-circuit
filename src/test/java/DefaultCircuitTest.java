@@ -28,6 +28,11 @@ public class DefaultCircuitTest {
     cc4.getOrLoad(new File(circuitRoot + "specialized/xor3.txt"));
     cc4.getOrLoad(new File(circuitRoot + "specialized/atLeast2.txt"));
 
+    CircuitCollection cc16 = LowLevelCircuitGenerator.defaultNamedCircuits();
+    cc16.addAll(gen.operators(16));
+    cc16.getOrLoad(new File(circuitRoot + "final/is_palindrome_16.txt"));
+
+
     CircuitCollection cc64 = LowLevelCircuitGenerator.defaultNamedCircuits();
     cc64.addAll(gen.operators(64));
 
@@ -159,7 +164,12 @@ public class DefaultCircuitTest {
             new CircuitTest("constant5", "", "101000"),
 
             new CircuitTest("is_palindrome", "00001111 01010011 10101100 00000000 00000000 00110101 11001010 11110000", "1"),
-            new CircuitTest("is_palindrome", "00001111 01010011 11001010 11110000 00000000 00000000 00000000 00000000", "0"),}),
+            new CircuitTest("is_palindrome", "00001111 01010011 11001010 11110000 00000000 00000000 00000000 00000000", "0"),
+        }),
+        new CircuitTestCollection(cc16, new CircuitTest[]{
+            new CircuitTest("is_palindrome_16", "0010 1011 1101 0100", "1"),
+            new CircuitTest("is_palindrome_16", "0010 1011 1101 0000", "0"),
+        }),
     };
 
     System.out.println("Running tests...");
