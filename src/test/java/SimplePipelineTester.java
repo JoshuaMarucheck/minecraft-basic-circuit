@@ -3,7 +3,7 @@ import circuit.preconstructed.LowLevelCircuitGenerator;
 
 import java.io.File;
 
-import static nbt.Constants.circuitRoot;
+import static misc.SettingsConstants.circuitRoot;
 import static physical2.SimplifiedPhysicalCircuitPipeline.circuitToSchematic;
 
 public class SimplePipelineTester {
