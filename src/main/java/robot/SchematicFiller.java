@@ -160,6 +160,7 @@ public class SchematicFiller {
       }
 
       runCommand("//paste");
+      waitTarget.pause(1000);
 
       if (moveToDir != null) {
         File moveToTarget = moveToDirPathAbs.resolve(child.getName()).toFile();

@@ -16,6 +16,12 @@ public class WaitTarget {
     } catch (InterruptedException ignored) {
     }
   }
+  public synchronized void pause(int timeout) {
+    try {
+      this.wait(timeout);
+    } catch (InterruptedException ignored) {
+    }
+  }
 
   public synchronized void waitShort() {
     try {
