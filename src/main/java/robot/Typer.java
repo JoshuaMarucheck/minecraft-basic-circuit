@@ -11,7 +11,7 @@ import static java.awt.event.KeyEvent.*;
 public class Typer {
   private static final WaitTarget waitTarget = new WaitTarget();
   private static final WaitTarget copyWaitTarget = new WaitTarget();
-  private static final int copyKey = VK_META;//System.getProperty("os.name").toLowerCase().contains("win") ? VK_CONTROL : VK_META;
+  private static final int copyKey = System.getProperty("os.name").toLowerCase().contains("win") ? VK_CONTROL : VK_META;
   private static final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
   private static final Transferable wipeThing;
 
