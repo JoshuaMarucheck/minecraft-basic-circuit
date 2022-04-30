@@ -118,6 +118,7 @@ public class SchematicFiller {
     setText("Attempting to collect mouse target:\n"
         + "Position this window and Minecraft so they don't overlap.\n"
         + "In Minecraft, align yourself and set yourself to flying mode.\n"
+        + "Switch to Spectator mode.\n"
         + "Open chat in Minecraft.\n"
         + "Then hover over Minecraft and press 'space'.");
     waitTarget.pause();
@@ -250,10 +251,7 @@ public class SchematicFiller {
   private void attemptTeleport(Point3D absTarget) {
     Point3D diff = absTarget.translate(pos.negate());
     diff = tpScale.apply(diff);
-    runCommand("/tp " + toRelativeCoordString(diff.translate(0, TP_Y_OFFSET, 0)));
-    Point3D lowerTarget = new Point3D(0, -TP_Y_OFFSET, 0);
-    runCommand("/fill " + toRelativeCoordString(lowerTarget) + " " + toRelativeCoordString(lowerTarget.translate(0, 1, 0)) + " air");
-    runCommand("/tp " + toRelativeCoordString(lowerTarget));
+    runCommand("/tp " + toRelativeCoordString(diff));
     pos = absTarget;
   }
 
