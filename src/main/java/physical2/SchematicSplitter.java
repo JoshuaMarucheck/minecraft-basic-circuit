@@ -42,7 +42,14 @@ public class SchematicSplitter {
 
   public static Point3D size(BlockDrawer blockDrawer) {
     Point3D upper = blockDrawer.size();
-    return new Point3D(upper.getX() / SettingsConstants.SCHEMATIC_WIDTH_LIMIT, upper.getY() / SettingsConstants.SCHEMATIC_WIDTH_LIMIT, upper.getZ() / SettingsConstants.SCHEMATIC_WIDTH_LIMIT);
+    return new Point3D(schematicWidth(upper.getX()), schematicWidth(upper.getY()), schematicWidth(upper.getZ()));
+  }
+
+  /**
+   * Division by SettingsConstants.SCHEMATIC_WIDTH_LIMIT rounded up.
+   */
+  private static int schematicWidth(int blockWidth) {
+    return (blockWidth + SettingsConstants.SCHEMATIC_WIDTH_LIMIT - 1) / SettingsConstants.SCHEMATIC_WIDTH_LIMIT;
   }
 
   private static boolean tooBig(Point3D upperBound) {
