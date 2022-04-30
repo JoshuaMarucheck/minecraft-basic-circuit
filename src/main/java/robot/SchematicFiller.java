@@ -7,6 +7,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Comparator;
 
@@ -18,8 +19,7 @@ public class SchematicFiller {
   private JFrame jFrame;
   private Scale tpScale;
   private TextArea textArea;
-
-  String prevText;
+  private String prevText;
 
   private static final int TP_Y_OFFSET = 2 * WORLD_HEIGHT;
 
@@ -84,34 +84,64 @@ public class SchematicFiller {
   }
 
   /**
+   * {@code targetSchematicDirPath} and {@code moveToDirPath} should be relative to {@code schematicDirectoryPath}
    * Blocks between items on space bar or something
    */
-  public void constructSchematic(File dir, String prefix) {
+  public void constructSchematic(Path schematicDirectoryPath, Path targetSchematicDirPath, Path moveToDirPath, String prefix) {
     if (prefix.length() != 0 && !prefix.endsWith("/")) {
       prefix += '/';
     }
-    WaitTarget waitTarget = new WaitTarget();
+    File schematicDir = schematicDirectoryPath.resolve(targetSchematicDirPath).toFile();
+    Path moveToDirPathAbs = moveToDirPath == null ? null : schematicDirectoryPath.resolve(moveToDirPath);
+    File moveToDir = moveToDirPathAbs == null ? null : moveToDirPathAbs.toFile();
 
+    File[] children = schematicDir.listFiles();
+    if (children == null) {
+      throw new IllegalStateException("Directory not found: " + schematicDir);
+    }
+
+    if (moveToDir != null) {
+      if (moveToDir.exists()) {
+        if (!moveToDir.isDirectory()) {
+          throw new IllegalArgumentException("File is not directory: " + moveToDir);
+        }
+      } else {
+        if (!moveToDir.mkdir()) {
+          throw new IllegalArgumentException("Directory could not be created: " + moveToDir);
+        }
+      }
+    }
+
+    WaitTarget waitTarget = new WaitTarget();
     buildJFrame(waitTarget);
 
-    setText("Attempting to collect mouse target:\nPosition this window and Minecraft so they don't overlap.\nOpen chat in Minecraft.\nThen hover over Minecraft and press 'space'.");
+    setText("Attempting to collect mouse target:\n"
+        + "Position this window and Minecraft so they don't overlap.\n"
+        + "In Minecraft, align yourself and set yourself to flying mode.\n"
+        + "Open chat in Minecraft.\n"
+        + "Then hover over Minecraft and press 'space'.");
     waitTarget.pause();
     Point mouseTarget = MouseInfo.getPointerInfo().getLocation();
     Typer.click(robot, mouseTarget);
-    runCommand("/tellraw @s {\"text\":\"Please align yourself and set yourself to flying mode.\"}");
-    pause(waitTarget, mouseTarget);
 
-    File[] children = dir.listFiles();
-    if (children == null) {
-      throw new IllegalStateException("Directory not found: " + dir);
-    }
     Arrays.sort(children, new FileComparator());
     for (File child : children) {
       String loadTarget = prefix + removeSuffix(child.getName());
       attemptTeleport(parsePoint(child.getName()));
       runCommand("//schem load " + loadTarget);
-//      pause(waitTarget, mouseTarget);
       runCommand("//paste");
+
+      if (moveToDir != null) {
+        File moveToTarget = moveToDirPathAbs.resolve(child.getName()).toFile();
+        if (moveToTarget.exists()) {
+          throw new IllegalStateException("Tried moving " + schematicDirectoryPath.relativize(child.toPath()) + " to " + moveToDirPath.resolve(child.getName()) + ", but target already exists");
+        }
+        if (child.renameTo(moveToTarget)) {
+          System.out.println("Renamed " + schematicDirectoryPath.relativize(child.toPath()) + " to " + moveToDirPath.resolve(child.getName()));
+        } else {
+          System.err.println("Warning: Could not rename " + schematicDirectoryPath.relativize(child.toPath()) + " to " + moveToDirPath.resolve(child.getName()));
+        }
+      }
     }
 
     closeJFrame();

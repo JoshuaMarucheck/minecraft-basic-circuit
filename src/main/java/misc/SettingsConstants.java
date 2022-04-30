@@ -1,5 +1,8 @@
 package misc;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 public class SettingsConstants {
   /**
    * Various resource paths
@@ -7,6 +10,11 @@ public class SettingsConstants {
   public static String root = "./src/main/resources/";
   public static String circuitRoot = root + "circuits/";
   public static String nbtRoot = root + "nbt/";
+
+  /**
+   * The folder where schematics are kept for WorldEdit
+   */
+  public static Path mcSchematicRoot = Paths.get(System.getProperty("user.home")).resolve("Library/Application Support/minecraft/config/worldedit/schematics/");
 
   /**
    * The number of milliseconds to wait after pressing or releasing a key.

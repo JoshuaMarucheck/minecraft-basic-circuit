@@ -9,8 +9,6 @@ import java.util.Scanner;
 import static misc.SettingsConstants.SCHEMATIC_WIDTH_LIMIT;
 
 public class FillSchematic {
-  private static final Path parent = Paths.get(SettingsConstants.root).resolve("schematic");
-
   public static void main(String[] args) throws AWTException {
     Scanner sc = new Scanner(System.in);
     System.out.print("Name of schematic: ");
@@ -19,6 +17,7 @@ public class FillSchematic {
       System.out.println("Defaulting to 'is_palindrome'");
       line = "is_palindrome";
     }
-    new SchematicFiller(SCHEMATIC_WIDTH_LIMIT).constructSchematic(parent.resolve(line).toFile(), line);
+
+    new SchematicFiller(SCHEMATIC_WIDTH_LIMIT).constructSchematic(SettingsConstants.mcSchematicRoot, Paths.get(line), Paths.get(line + "_out"), line);
   }
 }
