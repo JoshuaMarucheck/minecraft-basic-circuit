@@ -15,18 +15,22 @@ import static physical2.SimplifiedPhysicalCircuitPipeline.circuitToSchematic;
 
 public class NorCircuit {
   public static void main(String[] args) throws Exception {
-    System.out.println("What are you here to do? (compile, paste)");
     Scanner sc = new Scanner(System.in);
-    String line = sc.nextLine();
-    switch (line) {
-      case "compile":
-        compile(sc);
-        break;
-      case "paste":
-        paste(sc);
-        break;
-      default:
-        throw new IllegalArgumentException("Unrecognized input \"" + line + "\"");
+    flower: while (true) {
+      System.out.println("What are you here to do? ([c]ompile, [p]aste)");
+      String line = sc.nextLine();
+      switch (line.toLowerCase()) {
+        case "c":
+        case "compile":
+          compile(sc);
+          break flower;
+        case "p":
+        case "paste":
+          paste(sc);
+          break flower;
+        default:
+          System.err.println("Unrecognized option \"" + line + "\"");
+      }
     }
   }
 
