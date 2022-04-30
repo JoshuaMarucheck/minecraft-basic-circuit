@@ -11,8 +11,6 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Comparator;
 
-import static misc.SettingsConstants.WORLD_HEIGHT;
-
 public class SchematicFiller {
   private Point3D pos;
   private Robot robot;
@@ -21,13 +19,19 @@ public class SchematicFiller {
   private TextArea textArea;
   private String prevText;
 
-  private static final int TP_Y_OFFSET = 2 * WORLD_HEIGHT;
+  /**
+   * Whether or not the program should pause.
+   * If we receive a signal that indicates that the user wants control back, we'll wait.
+   * Then the user can either start the process again or close this program.
+   */
+  private volatile boolean pauseForQuitting;
 
   public SchematicFiller(int scale) throws AWTException {
     this.robot = new Robot();
     this.pos = new Point3D(0, 0, 0);
     tpScale = new Scale(scale);
     prevText = null;
+    pauseForQuitting = false;
   }
 
   private void buildJFrame(WaitTarget waitTarget) {
@@ -71,12 +75,26 @@ public class SchematicFiller {
 
       @Override
       public synchronized void focusLost(FocusEvent e) {
-        if (prevText == null) {
+        if (prevText == null && !textArea.getText().equals("Running...")) {
           prevText = textArea.getText();
           textArea.setText("Click outside the text box to continue");
         }
       }
     });
+
+    MouseMotionListener pauseListener = new MouseAdapter() {
+      @Override
+      public void mouseMoved(MouseEvent e) {
+        if (!pauseForQuitting) {
+          pauseForQuitting = true;
+          textArea.setText(textArea.getText() + "\n\nPausing...");
+        }
+      }
+    };
+
+    jFrame.addMouseMotionListener(pauseListener);
+    panel.addMouseMotionListener(pauseListener);
+    textArea.addMouseMotionListener(pauseListener);
 
     jFrame.pack();
     jFrame.setVisible(true);
@@ -120,7 +138,10 @@ public class SchematicFiller {
         + "In Minecraft, align yourself and set yourself to flying mode.\n"
         + "Switch to Spectator mode.\n"
         + "Open chat in Minecraft.\n"
-        + "Then hover over Minecraft and press 'space'.");
+        + "Then hover over Minecraft and press 'space'.\n"
+        + "\n"
+        + "Move the mouse over this window at any time to pause the process.\n"
+        + "(Pausing might take a few seconds.)");
     waitTarget.pause();
     Point mouseTarget = MouseInfo.getPointerInfo().getLocation();
     Typer.click(robot, mouseTarget);
@@ -130,6 +151,12 @@ public class SchematicFiller {
       String loadTarget = prefix + removeSuffix(child.getName());
       attemptTeleport(parsePoint(child.getName()));
       runCommand("//schem load " + loadTarget);
+
+      if (pauseForQuitting) {
+        pause(waitTarget, mouseTarget);
+        pauseForQuitting = false;
+      }
+
       runCommand("//paste");
 
       if (moveToDir != null) {
@@ -176,8 +203,7 @@ public class SchematicFiller {
   }
 
   private void pause(WaitTarget waitTarget, Point mouseTarget) {
-    setText("Open chat and press 'space' to continue");
-    Typer.click(robot, jFrameClickTarget());
+    setText("Paused temporarily;\nOpen chat and press 'space' to continue");
     waitTarget.pause();
     setText("Running...");
     Typer.click(robot, mouseTarget);
