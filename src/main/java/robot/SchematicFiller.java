@@ -147,6 +147,7 @@ public class SchematicFiller {
     waitTarget.pause();
     Point mouseTarget = MouseInfo.getPointerInfo().getLocation();
     Typer.click(robot, mouseTarget);
+    pauseForQuitting = false;
 
     Arrays.sort(children, new FileComparator());
     for (File child : children) {
