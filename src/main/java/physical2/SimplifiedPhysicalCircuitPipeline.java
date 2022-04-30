@@ -3,6 +3,7 @@ package physical2;
 import circuit.AnnotatedCircuit;
 import circuit.preconstructed.CircuitCollection;
 import dev.dewy.nbt.tags.collection.CompoundTag;
+import misc.SettingsConstants;
 import nbt.NBTMaker;
 import nbt.SNBTParser;
 import physical.things.Point3D;
@@ -25,10 +26,9 @@ import static misc.SettingsConstants.SCHEMATIC_WIDTH_LIMIT;
  * Creates a not space efficient redstone setup representing the given circuit.
  */
 public class SimplifiedPhysicalCircuitPipeline {
-  private final static String fileExtension = "schematic";
 
   public static void circuitToSchematic(CircuitCollection cc, String name, boolean verbose) throws IOException {
-    circuitToSchematic(cc.get(name).trim(), Paths.get(root).resolve("schematic").resolve(name + "." + fileExtension).toFile(), verbose);
+    circuitToSchematic(cc.get(name).trim(), Paths.get(root).resolve("schematic").resolve(name + SettingsConstants.fileExtension).toFile(), verbose);
   }
 
   public static void circuitToSchematic(AnnotatedCircuit circuit, File outFile, boolean verbose) throws IOException {
@@ -63,7 +63,7 @@ public class SimplifiedPhysicalCircuitPipeline {
       Path parent = outFile.toPath().getParent().resolve(filePrefix);
       parent.toFile().mkdir();
       for (Point3D pos : tags.keySet()) {
-        String fileName = pos.toStringWithoutSpaces() + "." + fileExtension;
+        String fileName = pos.toStringWithoutSpaces() + SettingsConstants.fileExtension;
         File file = parent.resolve(fileName).toFile();
         NBTMaker.toFile(tags.get(pos), file);
       }

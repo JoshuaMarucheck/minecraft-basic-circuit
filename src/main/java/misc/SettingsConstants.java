@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class SettingsConstants {
+  public final static String fileExtension = ".schematic";
   /**
    * Various resource paths
    */

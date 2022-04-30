@@ -102,6 +102,8 @@ public class SchematicFiller {
   }
 
   /**
+   * Pastes a directory containing many related schematic files into a world using WorldEdit.
+   * <p>
    * {@code targetSchematicDirPath} and {@code moveToDirPath} should be relative to {@code schematicDirectoryPath}
    * Blocks between items on space bar or something
    */
