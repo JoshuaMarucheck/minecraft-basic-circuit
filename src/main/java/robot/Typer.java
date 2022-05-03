@@ -135,14 +135,26 @@ public class Typer {
       case 'Y':
       case 'Z':
       case '~':
+      case '!':
       case '@':
-      case '"':
-      case '{':
-      case '}':
+      case '#':
+      case '$':
+      case '%':
+      case '^':
+      case '&':
+      case '*':
       case '(':
       case ')':
-      case ':':
       case '_':
+      case '+':
+      case '{':
+      case '}':
+      case '|':
+      case ':':
+      case '"':
+      case '<':
+      case '>':
+      case '?':
         return true;
       default:
         return false;
@@ -229,54 +241,73 @@ public class Typer {
       case 'z':
       case 'Z':
         return VK_Z;
-      case '0':
-      case ')':
-        return VK_0;
       case '1':
+      case '!':
         return VK_1;
       case '2':
       case '@':
         return VK_2;
       case '3':
+      case '#':
         return VK_3;
       case '4':
+      case '$':
         return VK_4;
       case '5':
+      case '%':
         return VK_5;
       case '6':
+      case '^':
         return VK_6;
       case '7':
+      case '&':
         return VK_7;
       case '8':
+      case '*':
         return VK_8;
       case '9':
       case '(':
         return VK_9;
+      case '0':
+      case ')':
+        return VK_0;
+      case '-':
+      case '_':
+        return VK_MINUS;
+      case '=':
+      case '+':
+        return VK_EQUALS;
       case '\n':
         return VK_ENTER;
-      case '/':
-        return VK_SLASH;
       case '[':
       case '{':
         return VK_OPEN_BRACKET;
       case ']':
       case '}':
         return VK_CLOSE_BRACKET;
-      case '~':
-        return VK_BACK_QUOTE;
-      case '"':
-        return VK_QUOTE;
-      case ' ':
-        return VK_SPACE;
-      case '-':
-      case '_':
-        return VK_MINUS;
+      case '\\':
+      case'|':
+        return VK_BACK_SLASH;
+      case ';':
       case ':':
         return VK_SEMICOLON;
-      case '.':
-        return VK_PERIOD;
+      case '\'':
+      case '"':
+        return VK_QUOTE;
       case ',':
+      case '<':
         return VK_COMMA;
+      case '.':
+      case '>':
+        return VK_PERIOD;
+      case '`':
+      case '~':
+        return VK_BACK_QUOTE;
+      case '/':
+      case '?':
+        return VK_SLASH;
+      case ' ':
+        return VK_SPACE;
       default:
         throw new IllegalArgumentException("Unrecognized character " + c);
     }
