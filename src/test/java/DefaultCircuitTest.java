@@ -12,6 +12,9 @@ import static misc.SettingsConstants.circuitRoot;
 
 public class DefaultCircuitTest {
   public static void main(String[] args) throws Exception {
+    if (!intToStr(6, 8).equals("01100000")) {
+      throw new IllegalStateException("Function for constructing unit tests is incorrect");
+    }
     System.out.println("Constructing tests");
 
     LowLevelCircuitGenerator gen = LowLevelCircuitGenerator.canonicalGenerator;
@@ -28,16 +31,10 @@ public class DefaultCircuitTest {
     cc4.getOrLoad(new File(circuitRoot + "specialized/xor3.txt"));
     cc4.getOrLoad(new File(circuitRoot + "specialized/atLeast2.txt"));
 
-    CircuitCollection cc16 = LowLevelCircuitGenerator.defaultNamedCircuits();
-    cc16.addAll(gen.operators(16));
-    cc16.getOrLoad(new File(circuitRoot + "final/is_palindrome_16.txt"));
-
-
     CircuitCollection cc64 = LowLevelCircuitGenerator.defaultNamedCircuits();
     cc64.addAll(gen.operators(64));
 
     cc64.getOrLoad(new File(circuitRoot + "specialized/constant5.txt"));
-    cc64.getOrLoad(new File(circuitRoot + "final/is_palindrome.txt"));
 
     CircuitTestCollection[] ctcs = new CircuitTestCollection[]{
         new CircuitTestCollection(cc4, new CircuitTest[]{
@@ -159,16 +156,16 @@ public class DefaultCircuitTest {
             new CircuitTest(">>4", "00101100", "11000000"),
 
             new CircuitTest("+", "00101100 01000101", "01101011"),
+
+            new CircuitTest("*", intToStr(6, 8) + intToStr(5, 8), intToStr(30, 8)),
+            new CircuitTest("*", intToStr(1, 8) + intToStr(5, 8), intToStr(5, 8)),
+            new CircuitTest("*", intToStr(7, 8) + intToStr(1, 8), intToStr(7, 8)),
+            new CircuitTest("*", intToStr(0, 8) + intToStr(9, 8), intToStr(0, 8)),
+            new CircuitTest("*", intToStr(6, 8) + intToStr(0, 8), intToStr(0, 8)),
+            new CircuitTest("*", intToStr(27, 8) + intToStr(31, 8), intToStr(27 * 31, 8)),
         }),
         new CircuitTestCollection(cc64, new CircuitTest[]{
             new CircuitTest("constant5", "", "101000"),
-
-            new CircuitTest("is_palindrome", "00001111 01010011 10101100 00000000 00000000 00110101 11001010 11110000", "1"),
-            new CircuitTest("is_palindrome", "00001111 01010011 11001010 11110000 00000000 00000000 00000000 00000000", "0"),
-        }),
-        new CircuitTestCollection(cc16, new CircuitTest[]{
-            new CircuitTest("is_palindrome_16", "0010 1011 1101 0100", "1"),
-            new CircuitTest("is_palindrome_16", "0010 1011 1101 0000", "0"),
         }),
     };
 
@@ -248,6 +245,15 @@ public class DefaultCircuitTest {
 
     return r;
   }
+
+  private static String intToStr(int x, int bitLength) {
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < bitLength; i++) {
+      sb.append((x & (1 << i)) != 0 ? "1" : "0");
+    }
+    return sb.toString();
+  }
+
 
   private static String boolArrToStr(boolean[] arr) {
     StringBuilder sb = new StringBuilder();

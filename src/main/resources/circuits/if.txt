@@ -1,0 +1,5 @@
+cond:1 a:1 b:1
+maybe1 = and cond a
+maybe2 = and (not cond) b
+r = or maybe1 maybe2
+r

@@ -228,7 +228,7 @@ public class AnnotationCircuitBuilder extends CircuitBuilder {
           runningInputSize += inputCircuit.outputSize();
         }
 
-        throw new RuntimeException("Input to circuit not found");
+        throw new RuntimeException("Input to node " + localNodeId + " in circuit " + circuitId + " not found");
       }
       assert (offset != -1);
     } else {
