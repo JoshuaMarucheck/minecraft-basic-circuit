@@ -46,7 +46,7 @@ public class TwoWayDirectedGraph<T> {
   }
 
   /**
-   * Returns a view of the in neighborhood of this node.
+   * Returns a view of the out neighborhood of this node.
    */
   public Set<T> outNeighborhood(T node) {
     return new SetView<>(forward.outNeighborhood(node));

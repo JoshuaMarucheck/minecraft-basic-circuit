@@ -278,6 +278,28 @@ public class Circuit {
     return trimWithMapping().getFirst();
   }
 
+  private boolean isCircuitEndpoint(Integer node) {
+    return contains(inputs, node) || contains(outputs, node);
+  }
+
+  /**
+   * @return {@code true} if the merge occurred, {@code false} otherwise.
+   */
+  private boolean attemptMerge(GraphMerger<Integer> merger, Integer node1, Integer node2) {
+    boolean oneUnsafe = isCircuitEndpoint(node1);
+    boolean twoUnsafe = isCircuitEndpoint(node2);
+    if (!(oneUnsafe && twoUnsafe)) {
+      if (oneUnsafe) {
+        merger.mergeNodes(node2, node1);
+      } else {
+        merger.mergeNodes(node1, node2);
+      }
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   /**
    * Does not modify the circuit in place.
    * <p>
@@ -295,24 +317,15 @@ public class Circuit {
    * - A mapping of node ids from the original circuit to the new one. (-1 represents node deletion)
    */
   public Pair<Circuit, int[]> trimWithMapping() {
+    // We want to do removal first, then node merging
+    // Node merging shouldn't affect node deletion, I think?
+
+
     // All nodes remaining at the end should be both either affected by input or affect output.
     // We want to start out by deleting all nodes which don't affect the output of the network at all
     Set<Integer> nodesToDelete = new HashSet<>(redstone.nodes());
     Set<Integer> affectsOutput = redstone.traceBackward(outputs);
     nodesToDelete.removeAll(affectsOutput);
-
-//    ArrayList<Edge<Integer>> nodesToMerge = new ArrayList<>();
-//    for (int node = 0; node < redstone.size(); node++) {
-//      if (redstone.outNeighborhood(node).size() == 1 && redstone.inNeighborhood(node).size() == 1) {
-//        Integer inputNode = unit(redstone.inNeighborhood(node));
-//        Integer outputNode = unit(redstone.outNeighborhood(node));
-//
-//        if (!(contains(outputs, outputNode) && contains(inputs, inputNode))) {
-//          nodesToMerge.add(new Edge<>(inputNode, outputNode));
-//          nodesToDelete.add(node);
-//        }
-//      }
-//    }
 
     /* Removal of constant nodes
      *
@@ -359,18 +372,59 @@ public class Circuit {
       }
     }
 
+    /*
+     * Some invariants on nodeMerges that we need to maintain:
+     * - inputs and outputs are never deleted
+     * - If an input or an output is involved in a merge, the input or output is the one being merged into
+     *   - this means we cannot merge two inputs or an input and an output.
+     */
+    GraphMerger<Integer> nodeMerges = new GraphMerger<>(getGraph());
+    for (Integer node : nodesToDelete) {
+      nodeMerges.removeNode(node);
+    }
 
-    int newSize = size() - nodesToDelete.size();// + nodesToMerge.size();
-    SimpleCircuitBuilder scb = new SimpleCircuitBuilder();
-    scb.ensureSize(newSize);
-    int[] compressMap = new int[size()];
-    int runningId = 0;
-    for (int i = 0; i < size(); i++) {
-      if (nodesToDelete.contains(i)) {
-        compressMap[i] = -1;
-      } else {
-        compressMap[i] = runningId++;
+    /* Check for merging
+     * This occurs when there is a lonely edge.
+     * A lonely edge is where its output has only the one edge outputting to it,
+     * and its input as only the one edge taking it as input.
+     */
+
+    Stack<Edge<Integer>> edgesToExamineForForwarding = new Stack<>();
+    for (Iterator<Edge<Integer>> it = redstone.getEdges(); it.hasNext(); ) {
+      edgesToExamineForForwarding.add(it.next());
+    }
+
+    while (!edgesToExamineForForwarding.isEmpty()) {
+      Edge<Integer> edge = edgesToExamineForForwarding.pop();
+      Integer start = edge.getStart();
+      Integer end = edge.getEnd();
+      if (!nodeMerges.hasEdge(edge)) {
+        continue;
       }
+      if (isCircuitEndpoint(start) || isCircuitEndpoint(end)) {
+        // We should never delete an input or output
+        continue;
+      }
+      if (nodeMerges.inNeighborhood(end).size() != 1 || nodeMerges.outNeighborhood(start).size() != 1) {
+        // The edge must be lonely
+        continue;
+      }
+      Set<Integer> outNeigh = nodeMerges.outNeighborhood(end);
+      Set<Integer> inNeigh = nodeMerges.inNeighborhood(start);
+      if (outNeigh.size() != 1 && inNeigh.size() != 1) {
+        // To avoid multiplicative edge growth
+        if (!(inNeigh.size() == 2 && outNeigh.size() == 2)) {
+          continue;
+        }
+      }
+
+      for (Integer farBackFrom : inNeigh) {
+        for (Integer farForwardTo : outNeigh) {
+          edgesToExamineForForwarding.add(new Edge<>(farBackFrom, farForwardTo));
+        }
+      }
+
+      nodeMerges.forwardEdge(start, end);
     }
 
     /*
@@ -382,39 +436,36 @@ public class Circuit {
      * Node ids need to be compressed to the new size, which will
      * be done in nodeMapping.
      */
-    HashMap<Integer, Integer> nodeMappingBase = new HashMap<>();
-    for (Integer node : nodesToDelete) {
-      nodeMappingBase.put(node, -1);
-    }
-//    for (Edge<Integer> nodePair : nodesToMerge) {
-//      Integer start = getMapping(nodeMappingBase, nodePair.getStart());
-//      Integer end = getMapping(nodeMappingBase, nodePair.getEnd());
-//      if (!start.equals(end)) {
-//        nodeMappingBase.put(getMapping(nodeMappingBase, nodePair.getStart()), nodePair.getEnd());
-//      } else {
-//        System.out.println("hi");
-//      }
-//    }
-    /*
-     * Now add compression to the new circuit size.
-     * TODO: I'm not really sure that this works for node merging...
-     */
     int[] nodeMapping = new int[size()];
-    for (int node = 0; node < size(); node++) {
-      int baseMapping = getMapping(nodeMappingBase, node);
-      nodeMapping[node] = baseMapping == -1 ? -1 : compressMap[baseMapping];
+    int runningId = 0;
+    for (int i = 0; i < size(); i++) {
+      if (nodeMerges.isSelfMapped(i)) {
+        nodeMapping[i] = runningId++;
+      }
+    }
+    for (int i = 0; i < size(); i++) {
+      if (nodeMerges.isDeleted(i)) {
+        nodeMapping[i] = -1;
+      } else {
+        nodeMapping[i] = nodeMapping[nodeMerges.getMapping(i)];
+      }
     }
 
-    Iterator<Edge<Integer>> edges = redstone.getEdges();
-    while (edges.hasNext()) {
-      Edge<Integer> edge = edges.next();
+    int newSize = runningId;//size() - nodesToDelete.size();// + nodesToMerge.size();
+    SimpleCircuitBuilder scb = new SimpleCircuitBuilder();
+    scb.ensureSize(newSize);
+
+    for (Iterator<Edge<Integer>> it = nodeMerges.toDirectedGraphView().getEdges(); it.hasNext(); ) {
+      Edge<Integer> edge = it.next();
 
       int start = nodeMapping[edge.getStart()];
       int end = nodeMapping[edge.getEnd()];
 
-      if (start != -1 && end != -1 && start != end) {
-        scb.addEdge(start, end);
+      if (start == -1 || end == -1 || start == end) {
+        throw new IllegalStateException("Invalid node graph");
       }
+
+      scb.addEdge(start, end);
     }
 
     for (int i : inputs) {
@@ -425,31 +476,6 @@ public class Circuit {
     }
 
     return new Pair<>(scb.toCircuit(), nodeMapping);
-  }
-
-  /**
-   * Follows cycles in {@code map}, starting from {@code val}, until an end point is reached.
-   * <p>
-   * O(1) amt
-   */
-  private static <V> V getMapping(Map<V, V> map, V val) {
-    if (map.containsKey(val)) {
-      ArrayList<V> vs = new ArrayList<>();
-
-      while (map.containsKey(val)) {
-        vs.add(val);
-        val = map.get(val);
-      }
-
-      for (V v : vs) {
-        map.put(v, val);
-      }
-    }
-    return val;
-  }
-
-  private static <V> V mapOrDefault(Map<V, V> map, V val) {
-    return map.getOrDefault(val, val);
   }
 
   private static int mapCompressInt(Map<Integer, Integer> map, int[] compressMap, Integer val) {
