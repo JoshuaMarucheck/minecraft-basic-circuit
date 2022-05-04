@@ -31,6 +31,17 @@ public class DefaultCircuitTest {
     cc4.getOrLoad(new File(circuitRoot + "specialized/xor3.txt"));
     cc4.getOrLoad(new File(circuitRoot + "specialized/atLeast2.txt"));
 
+    ArrayList<CircuitTest> fourBitProducts = new ArrayList<>();
+    for (int i = 0; i < 16; i++) {
+      for (int k = 0; k < 16; k++) {
+        fourBitProducts.add(new CircuitTest(
+            "*",
+            intToStr(i, 4) + intToStr(k, 4),
+            intToStr(i * k, 4))
+        );
+      }
+    }
+
     CircuitCollection cc64 = LowLevelCircuitGenerator.defaultNamedCircuits();
     cc64.addAll(gen.operators(64));
 
@@ -147,6 +158,7 @@ public class DefaultCircuitTest {
             new CircuitTest(">>1", "1010", "0100"),
             new CircuitTest(">>2", "1010", "1000"),
         }),
+        new CircuitTestCollection(cc4, fourBitProducts.toArray(new CircuitTest[0])),
         new CircuitTestCollection(gen.operators(8), new CircuitTest[]{
             // our numbers are little-endian, but shifting is big-endian
             new CircuitTest("<<2", "00101100", "00001011"),
