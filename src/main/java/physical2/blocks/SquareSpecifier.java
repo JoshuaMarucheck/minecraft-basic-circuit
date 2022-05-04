@@ -33,6 +33,22 @@ public class SquareSpecifier {
     return false;
   }
 
+  public Side getSide1() {
+    return s1;
+  }
+
+  public Side getSide2() {
+    return s2;
+  }
+
+  public BiSide getBiSideStart() {
+    return start;
+  }
+
+  public BiSide getBiSideEnd() {
+    return end;
+  }
+
   @Override
   public int hashCode() {
     return Objects.hashCode(s1) + 11 * Objects.hashCode(s2) + Objects.hashCode(start) * 113 + Objects.hashCode(end) * 1009 + (repeater ? 7919 : 0);
