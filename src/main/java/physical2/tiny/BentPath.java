@@ -103,7 +103,7 @@ public class BentPath implements Iterable<Pair<Point2D, SquareSpecifier>> {
     @Override
     public Pair<Point2D, SquareSpecifier> next() {
       repeatIndex++;
-      if (repeatIndex % 3 == 0) {
+      if (repeatIndex % 2 == 0) {
         repeatIndex = 0;
       }
 
