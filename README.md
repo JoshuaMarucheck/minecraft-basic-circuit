@@ -1,5 +1,20 @@
-# minecraft-basic-circuit
+# Minecraft Boolean Function Compiler
 
-https://minecraft.fandom.com/wiki/Schematic_file_format#:~:text=The%20.,on%20the%20Indev%20level%20format.
+The thing to run is src/main/java/NorCircuit.java
 
-The goal is probably to output a .schematic file
+Compiles bitwise functions into redstone schematics.
+Also helps with pasting schematics into a Minecraft world,
+should there be multiple schematic files generated.
+
+Functions that can be compiled are written in a
+programming-language style of input. There is
+(as of now) no good way to specify dependencies
+between input files.
+
+Circuits to be compiled go in main/resources/circuits.
+There are a few example circuits in there.
+
+Sorry for the lack of documentation on things.
+
+The goal is to output a .schematic file.
+https://minecraft.fandom.com/wiki/Schematic_file_format
