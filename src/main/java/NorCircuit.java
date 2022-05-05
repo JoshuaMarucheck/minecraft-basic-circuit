@@ -1,12 +1,12 @@
 import circuit.preconstructed.CircuitCollection;
 import circuit.preconstructed.LowLevelCircuitGenerator;
 import circuit.preconstructed.exceptions.MissingCircuitDependencyException;
-import misc.SettingsConstants;
 import robot.SchematicFiller;
 
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Scanner;
 
@@ -51,7 +51,7 @@ public class NorCircuit {
           cc64.addAll(gen.operators(i));
         } catch (NumberFormatException ignored) {
           try {
-            cc64.getOrLoad(Paths.get(circuitRoot).resolve(line).toFile());
+            cc64.getOrLoad(circuitRoot.resolve(line).toFile());
           } catch (IOException e1) {
             e1.printStackTrace();
           } catch (MissingCircuitDependencyException e1) {
@@ -99,8 +99,31 @@ public class NorCircuit {
       line = "is_palindrome";
     }
 
-    File targetFile = SettingsConstants.mcSchematicRoot.resolve(line).toFile();
-    File targetSingleFile = SettingsConstants.mcSchematicRoot.resolve(line + fileExtension).toFile();
+    Path minecraftLoc = mcRoot;
+    Path schematicLocalPath = mcSchematicLocalPath;
+    Path schematicRoot = minecraftLoc.resolve(schematicLocalPath);
+    if (!schematicRoot.toFile().exists()) {
+
+      if (!minecraftLoc.toFile().exists()) {
+        System.err.println("Minecraft directory not found. Where is minecraft on you computer?");
+        minecraftLoc = Paths.get(sc.nextLine());
+        if (!minecraftLoc.toFile().exists()) {
+          throw new IllegalArgumentException("Minecraft directory not found");
+        }
+        schematicRoot = minecraftLoc.resolve(schematicLocalPath);
+      }
+
+      if (!schematicRoot.toFile().exists()) {
+        System.err.println("Schematic directory not found. Where is it relative to the minecraft directory?");
+        schematicLocalPath = Paths.get(sc.nextLine());
+        schematicRoot = minecraftLoc.resolve(schematicLocalPath);
+        if (!schematicRoot.toFile().exists()) {
+          throw new IllegalArgumentException("Schematic directory not found");
+        }
+      }
+    }
+    File targetFile = schematicRoot.resolve(line).toFile();
+    File targetSingleFile = schematicRoot.resolve(line + fileExtension).toFile();
 
     while (!(targetSingleFile.exists() || targetFile.exists()) || line.indexOf(' ') != -1) {
       if (line.indexOf(' ') != -1) {
@@ -113,13 +136,14 @@ public class NorCircuit {
       }
 
       line = sc.nextLine();
-      targetFile = SettingsConstants.mcSchematicRoot.resolve(line).toFile();
+      targetFile = schematicRoot.resolve(line).toFile();
+      targetSingleFile = schematicRoot.resolve(line + fileExtension).toFile();
     }
     if (!targetFile.exists()) {
       targetFile = targetSingleFile;
     }
     if (targetFile.isDirectory()) {
-      new SchematicFiller(SCHEMATIC_WIDTH_LIMIT).constructSchematic(SettingsConstants.mcSchematicRoot, Paths.get(line), Paths.get(line + "_out"), line);
+      new SchematicFiller(SCHEMATIC_WIDTH_LIMIT).constructSchematic(schematicRoot, Paths.get(line), Paths.get(line + "_out"), line);
     } else if (!targetSingleFile.isDirectory()) {
       System.out.println("You can paste that one manually. Run the following two commands in order:");
       System.out.println("//schem load " + line);

@@ -28,7 +28,7 @@ import static misc.SettingsConstants.SCHEMATIC_WIDTH_LIMIT;
 public class SimplifiedPhysicalCircuitPipeline {
 
   public static void circuitToSchematic(CircuitCollection cc, String name, boolean verbose) throws IOException {
-    circuitToSchematic(cc.get(name).trim(), Paths.get(root).resolve("schematic").resolve(name + SettingsConstants.fileExtension).toFile(), verbose);
+    circuitToSchematic(cc.get(name).trim(), root.resolve("schematic").resolve(name + SettingsConstants.fileExtension).toFile(), verbose);
   }
 
   public static void circuitToSchematic(AnnotatedCircuit circuit, File outFile, boolean verbose) throws IOException {

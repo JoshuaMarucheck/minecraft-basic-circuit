@@ -58,7 +58,7 @@ public class NBTMaker {
   }
 
   private static CompoundTag baseTag() throws IOException, SNBTParser.SNBTParseException {
-    CompoundTag tag = (CompoundTag) SNBTParser.fromFile(Paths.get(nbtRoot).resolve("base_tag.json").toFile());
+    CompoundTag tag = (CompoundTag) SNBTParser.fromFile(nbtRoot.resolve("base_tag.json").toFile());
     tag.put(paletteTag);
     tag.put(paletteSize);
     return tag;

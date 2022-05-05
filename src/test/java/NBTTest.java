@@ -14,8 +14,8 @@ import java.util.List;
 import static nbt.NBTMaker.NBT;
 
 public class NBTTest {
-  private static final File JSON_OUT_SAMPLE = Paths.get(SettingsConstants.nbtRoot).resolve("out.json").toFile();
-  private static final Path NBT_PATH = Paths.get(SettingsConstants.nbtRoot);
+  private static final File JSON_OUT_SAMPLE = SettingsConstants.nbtRoot.resolve("out.json").toFile();
+  private static final Path NBT_PATH = SettingsConstants.nbtRoot;
 
   public static void main(String[] args) throws IOException, SNBTParser.SNBTParseException, UnitTestFailException {
     checkFile(NBT_PATH.resolve("test_tag.json").toFile());
@@ -24,7 +24,7 @@ public class NBTTest {
 
     NBTMaker.toFile(
         (CompoundTag) SNBTParser.fromFile(NBT_PATH.resolve("flipflop.json").toFile()),
-        Paths.get(SettingsConstants.root).resolve("schematic").resolve("flipflop2.schem").toFile()
+        SettingsConstants.root.resolve("schematic").resolve("flipflop2.schem").toFile()
     );
   }
 
