@@ -3,7 +3,9 @@ package physical2.one;
 import java.util.Iterator;
 
 /**
- * {@code null} is the empty range, or maybe the full one? I really just need two nullish values.
+ * {@code null} is the empty range, since Ranges only ever seem to be used for merging.
+ * <p>
+ * Inclusive of both endpoints.
  */
 public class Range implements Iterable<Integer> {
   private int lo, hi;
@@ -54,23 +56,30 @@ public class Range implements Iterable<Integer> {
   }
 
   /**
-   * Will not include Integer.MAX_VALUE even if it is part of this Range.
+   * Requires that the iterator not start at {@code Integer.MIN_VALUE}
    */
   @Override
   public Iterator<Integer> iterator() {
     return new IntIterator();
   }
 
+  public boolean includes(int i) {
+    return lo <= i && i <= hi;
+  }
+
   private class IntIterator implements Iterator<Integer> {
     private int i;
 
     public IntIterator() {
+      if (lo == Integer.MIN_VALUE) {
+        throw new IllegalStateException("Can't iterate over a range starting at Integer.MIN_VALUE");
+      }
       i = lo;
     }
 
     @Override
     public boolean hasNext() {
-      return i < hi;
+      return i != Integer.MIN_VALUE && i <= hi;
     }
 
     @Override
@@ -82,5 +91,18 @@ public class Range implements Iterable<Integer> {
   @Override
   public String toString() {
     return "Range(" + lo + ", " + hi + ")";
+  }
+
+  @Override
+  public int hashCode() {
+    return Integer.hashCode(lo) + 37 * Integer.hashCode(hi);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj instanceof Range) {
+      return lo == ((Range) obj).lo && hi == ((Range) obj).hi;
+    }
+    return false;
   }
 }
